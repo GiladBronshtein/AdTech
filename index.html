@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rise Codes - Ad Tech Learning Platform</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Mermaid for flowcharts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.3.1/mermaid.min.js"></script>
+    <!-- Custom CSS -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="fw-bold mb-3">Ad Tech Learning Platform</h1>
+                    <p class="lead mb-4">Understand the complex world of Advertising Technology from basics to expert level through interactive learning</p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <button class="btn btn-light" id="startLearningBtn">
+                            <i class="fas fa-play-circle me-2"></i>Start Learning
+                        </button>
+                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#aboutModal">
+                            <i class="fas fa-info-circle me-2"></i>About Ad Tech
+                        </button>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center mt-4 mt-lg-0">
+                    <img src="./images/AdTech.png" alt="Ad Tech Illustration" class="img-fluid rounded-3 shadow">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <div class="container my-5">
+        <ul class="nav nav-pills mb-4 justify-content-center flex-column flex-md-row" id="mainNav">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="pill" href="#overview">
+                    <i class="fas fa-globe me-2"></i>Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#beginnerSection">
+                    <i class="fas fa-seedling me-2"></i>Beginner
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#intermediateSection">
+                    <i class="fas fa-cogs me-2"></i>Intermediate
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#expertSection">
+                    <i class="fas fa-brain me-2"></i>Expert
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#quizSection">
+                    <i class="fas fa-question-circle me-2"></i>Quiz
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="pill" href="#glossarySection">
+                    <i class="fas fa-book me-2"></i>Glossary
+                </a>
+            </li>
+        </ul>
+
+        <!-- Tab content -->
+        <div class="tab-content">
+            <!-- Overview Section -->
+            <div class="tab-pane fade show active" id="overview"></div>
+
+            <!-- Beginner Section -->
+            <div class="tab-pane fade" id="beginnerSection"></div>
+
+            <!-- Intermediate Section -->
+            <div class="tab-pane fade" id="intermediateSection"></div>
+
+            <!-- Expert Section -->
+            <div class="tab-pane fade" id="expertSection"></div>
+
+            <!-- Quiz Section -->
+            <div class="tab-pane fade" id="quizSection"></div>
+
+            <!-- Glossary Section -->
+            <div class="tab-pane fade" id="glossarySection"></div>
+        </div>
+    </div>
+
+    <!-- Progress Tracker -->
+    <div id="progressTracker" class="d-none d-lg-block">
+        <h6 class="mb-2">Your Learning Progress</h6>
+        <div class="progress mb-3">
+            <div class="progress-bar progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>
+        <div class="small text-muted" id="progressStatus">Just started</div>
+    </div>
+
+    <!-- Modals -->
+    <!-- About Modal -->
+    <div class="modal fade" id="aboutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">About Ad Tech & This Learning Platform</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h4>What is Ad Tech?</h4>
+                    <p>Advertising Technology, or Ad Tech, refers to the systems, software platforms, data analytics tools, and technologies used to deliver, control, and target digital advertising to consumers. It's the backbone of the digital advertising ecosystem, enabling the automated buying and selling of ad space across the internet.</p>
+                    
+                    <h4>Why Learn Ad Tech?</h4>
+                    <p>Understanding Ad Tech is crucial for anyone working in digital marketing, advertising, publishing, or technology. The digital advertising industry continues to grow exponentially, with global digital ad spending exceeding $600 billion annually. Knowledge of Ad Tech can lead to career opportunities in various roles:</p>
+                    <ul>
+                        <li>Programmatic Media Buying</li>
+                        <li>Ad Operations</li>
+                        <li>Data Analysis & Optimization</li>
+                        <li>Ad Tech Sales & Business Development</li>
+                        <li>Product Management in Ad Tech Companies</li>
+                        <li>Marketing Technology Integration</li>
+                    </ul>
+                    
+                    <h4>About This Learning Platform</h4>
+                    <p>This interactive learning platform is designed to make Ad Tech concepts accessible to everyone, from complete beginners to industry professionals looking to deepen their knowledge. The content is structured in three levels:</p>
+                    <ul>
+                        <li><strong>Beginner:</strong> Fundamental concepts, key players, and basic terminology</li>
+                        <li><strong>Intermediate:</strong> Programmatic advertising, real-time bidding, and targeting techniques</li>
+                        <li><strong>Expert:</strong> Advanced topics like header bidding, attribution models, and emerging trends</li>
+                    </ul>
+                    <p>Each section includes interactive diagrams, quizzes, and practical examples to help solidify your understanding.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="startLearningModalBtn" data-bs-dismiss="modal">Start Learning</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roadmap Modal -->
+    <div class="modal fade" id="roadmapModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ad Tech Learning Roadmap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="flowchart-container">
+                        <div class="mermaid">
+                            flowchart TD
+                                A[Start Here] --> B[Ad Tech Fundamentals]
+                                B --> C[Key Players in Ad Tech]
+                                C --> D[Ad Formats & Metrics]
+                                D --> E[Programmatic Advertising]
+                                E --> F[Real-Time Bidding]
+                                F --> G[Targeting Methods]
+                                G --> H[Data Management]
+                                H --> I[Header Bidding]
+                                I --> J[Attribution & Measurement]
+                                J --> K[Privacy & Identity]
+                                K --> L[Emerging Trends]
+                                
+                                style B fill:#d4f1f9
+                                style C fill:#d4f1f9
+                                style D fill:#d4f1f9
+                                style E fill:#ffe0b2
+                                style F fill:#ffe0b2
+                                style G fill:#ffe0b2
+                                style H fill:#ffe0b2
+                                style I fill:#ffcdd2
+                                style J fill:#ffcdd2
+                                style K fill:#ffcdd2
+                                style L fill:#ffcdd2
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Beginner</h5>
+                                    <div style="height: 8px; background-color: #d4f1f9; margin-bottom: 15px;"></div>
+                                    <p class="card-text">Estimated time: 1-2 hours</p>
+                                    <ul class="small">
+                                        <li>Ad Tech Fundamentals</li>
+                                        <li>Key Players & Ecosystem</li>
+                                        <li>Common Ad Formats</li>
+                                        <li>Basic Metrics & KPIs</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Intermediate</h5>
+                                    <div style="height: 8px; background-color: #ffe0b2; margin-bottom: 15px;"></div>
+                                    <p class="card-text">Estimated time: 2-3 hours</p>
+                                    <ul class="small">
+                                        <li>Programmatic Advertising</li>
+                                        <li>Real-Time Bidding (RTB)</li>
+                                        <li>Targeting Methods</li>
+                                        <li>Data Management Platforms</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title text-center">Expert</h5>
+                                    <div style="height: 8px; background-color: #ffcdd2; margin-bottom: 15px;"></div>
+                                    <p class="card-text">Estimated time: 3-4 hours</p>
+                                    <ul class="small">
+                                        <li>Header Bidding</li>
+                                        <li>Attribution Models</li>
+                                        <li>Privacy & Identity</li>
+                                        <li>Emerging Trends</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Content Data -->
+    <script src="content-data.js"></script>
+    
+    <!-- Main App JS -->
+    <script src="app.js"></script>
+</body>
+</html>
