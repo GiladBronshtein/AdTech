@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // List of modules to load in the correct order
     const modules = [
+        'dark-mode.js',          // Load this FIRST
         'content-data.js',
         'overview-content.js',
         'beginner-content.js',
