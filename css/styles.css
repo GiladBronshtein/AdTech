@@ -1,22 +1,24 @@
-/* Add this to your styles.css file */
+/* Remove the first :root block entirely and replace with: */
 :root {
-    color-scheme: light only !important;
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --primary-light: #e0f7fa;
+    /* ... keep other variables */
 }
 
+/* Remove all the aggressive !important overrides in the dark mode section */
 @media (prefers-color-scheme: dark) {
     :root {
-        /* Override dark mode colors with light mode colors */
-        --text-color: #333 !important;
-        --text-light: #666 !important;
-        --primary-light: #e0f7fa !important;
-        background-color: #f9f9f9 !important;
-        color: #333 !important;
+        --text-color: #f8f9fa;
+        --text-light: #adb5bd;
+        --primary-light: #1a5276;
     }
     
-    body, .card, .flowchart-container, #progressTracker, .modal-content {
-        background-color: #fff !important;
-        color: #333 !important;
+    body {
+        background-color: #121212;
+        color: var(--text-color);
     }
+    /* ... simplified dark mode styles without !important spam */
 }
 
 
