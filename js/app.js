@@ -441,61 +441,9 @@ function setupEventListeners() {
  * Set up tab navigation event listeners
  */
 function setupTabNavigation() {
-    const mainNavTabs = document.querySelectorAll('#mainNav .nav-link');
-    
-    mainNavTabs.forEach(tab => {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // Get the target content ID
-            const targetId = this.getAttribute('data-bs-target');
-            
-            // Hide all tab panes
-            document.querySelectorAll('.tab-pane').forEach(pane => {
-                pane.classList.remove('show', 'active');
-            });
-            
-            // Deactivate all tabs
-            mainNavTabs.forEach(t => {
-                t.classList.remove('active');
-                t.setAttribute('aria-selected', 'false');
-            });
-            
-            // Activate this tab
-            this.classList.add('active');
-            this.setAttribute('aria-selected', 'true');
-            
-            // Show the target content
-            const targetPane = document.querySelector(targetId);
-            if (targetPane) {
-                targetPane.classList.add('show', 'active');
-                
-                // Special handling for the Quiz section - initialize the first quiz tab
-                if (targetId === '#quizSection') {
-                    // Make sure the beginner quiz tab is active by default
-                    const beginnerQuizTab = document.getElementById('beginner-quiz-tab');
-                    const beginnerQuiz = document.getElementById('beginnerQuiz');
-                    
-                    if (beginnerQuizTab && beginnerQuiz) {
-                        // Activate the beginner tab
-                        document.querySelectorAll('#quizNav .nav-link').forEach(t => {
-                            t.classList.remove('active');
-                            t.setAttribute('aria-selected', 'false');
-                        });
-                        
-                        beginnerQuizTab.classList.add('active');
-                        beginnerQuizTab.setAttribute('aria-selected', 'true');
-                        
-                        // Show beginner quiz content
-                        document.querySelectorAll('#quizSection .tab-pane').forEach(p => {
-                            p.classList.remove('show', 'active');
-                        });
-                        
-                        beginnerQuiz.classList.add('show', 'active');
-                    }
-                }
-            }
-            
+    // Let Bootstrap handle tabs, just add our custom logic
+    document.querySelectorAll('#mainNav .nav-link').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
             // Re-initialize Mermaid diagrams in the new tab
             setTimeout(() => {
                 if (typeof mermaid !== 'undefined') {
@@ -506,12 +454,74 @@ function setupTabNavigation() {
     });
 }
 
-/**
- * Set up navigation event listeners
- * @param {HTMLElement} progressBar - The progress bar element
- * @param {HTMLElement} progressStatus - The progress status element
- * @param {number} progress - The current progress value
- */
+// function setupTabNavigation() {
+//     const mainNavTabs = document.querySelectorAll('#mainNav .nav-link');
+    
+//     mainNavTabs.forEach(tab => {
+//         tab.addEventListener('click', function(e) {
+//             e.preventDefault();
+            
+//             // Get the target content ID
+//             const targetId = this.getAttribute('data-bs-target');
+            
+//             // Hide all tab panes
+//             document.querySelectorAll('.tab-pane').forEach(pane => {
+//                 pane.classList.remove('show', 'active');
+//             });
+            
+//             // Deactivate all tabs
+//             mainNavTabs.forEach(t => {
+//                 t.classList.remove('active');
+//                 t.setAttribute('aria-selected', 'false');
+//             });
+            
+//             // Activate this tab
+//             this.classList.add('active');
+//             this.setAttribute('aria-selected', 'true');
+            
+//             // Show the target content
+//             const targetPane = document.querySelector(targetId);
+//             if (targetPane) {
+//                 targetPane.classList.add('show', 'active');
+                
+//                 // Special handling for the Quiz section - initialize the first quiz tab
+//                 if (targetId === '#quizSection') {
+//                     // Make sure the beginner quiz tab is active by default
+//                     const beginnerQuizTab = document.getElementById('beginner-quiz-tab');
+//                     const beginnerQuiz = document.getElementById('beginnerQuiz');
+                    
+//                     if (beginnerQuizTab && beginnerQuiz) {
+//                         // Activate the beginner tab
+//                         document.querySelectorAll('#quizNav .nav-link').forEach(t => {
+//                             t.classList.remove('active');
+//                             t.setAttribute('aria-selected', 'false');
+//                         });
+                        
+//                         beginnerQuizTab.classList.add('active');
+//                         beginnerQuizTab.setAttribute('aria-selected', 'true');
+                        
+//                         // Show beginner quiz content
+//                         document.querySelectorAll('#quizSection .tab-pane').forEach(p => {
+//                             p.classList.remove('show', 'active');
+//                         });
+                        
+//                         beginnerQuiz.classList.add('show', 'active');
+//                     }
+//                 }
+//             }
+            
+//             // Re-initialize Mermaid diagrams in the new tab
+//             setTimeout(() => {
+//                 if (typeof mermaid !== 'undefined') {
+//                     mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+//                 }
+//             }, 100);
+//         });
+//     });
+// }
+
+
+
 function setupNavigationListeners(progressBar, progressStatus, progress) {
     // Initial navigation buttons
     const startLearningBtn = document.getElementById('startLearningBtn');
