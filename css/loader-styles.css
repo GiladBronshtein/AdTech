@@ -1,5 +1,4 @@
 /* Loader styles for the Ad Tech Learning Platform */
-
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -14,12 +13,17 @@
     transition: opacity 0.5s ease;
 }
 
+.dark-mode .loading-overlay {
+    background-color: rgba(18, 18, 18, 0.9);
+}
+
 .loading-spinner {
     text-align: center;
     padding: 2rem;
     border-radius: 8px;
-    background-color: white;
+    background-color: var(--card-background, white);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    color: var(--text-color, #333);
 }
 
 .spinner-border {
@@ -30,24 +34,9 @@
 .loading-text {
     margin-top: 1rem;
     font-size: 1rem;
-    color: var(--primary-color);
+    color: var(--primary-color, #3498db);
 }
 
 .fade-out {
     opacity: 0;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .loading-overlay {
-        background-color: rgba(18, 18, 18, 0.9);
-    }
-    
-    .loading-spinner {
-        background-color: #1e1e1e;
-    }
-    
-    .loading-text {
-        color: var(--primary-light);
-    }
 }
