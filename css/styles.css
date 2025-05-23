@@ -1,26 +1,4 @@
-/* Remove the first :root block entirely and replace with: */
-:root {
-    --primary-color: #3498db;
-    --primary-dark: #2980b9;
-    --primary-light: #e0f7fa;
-    /* ... keep other variables */
-}
-
-/* Remove all the aggressive !important overrides in the dark mode section */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --text-color: #f8f9fa;
-        --text-light: #adb5bd;
-        --primary-light: #1a5276;
-    }
-    
-    body {
-        background-color: #121212;
-        color: var(--text-color);
-    }
-    /* ... simplified dark mode styles without !important spam */
-}
-
+/* Clean CSS - Light Mode Default with Toggle-based Dark Mode */
 
 :root {
     --primary-color: #3498db;
@@ -34,19 +12,56 @@
     --light-color: #ecf0f1;
     --text-color: #333;
     --text-light: #666;
+    --background-color: #f9f9f9;
+    --card-background: #ffffff;
+    --border-color: #ddd;
     --border-radius: 15px;
     --box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     --hover-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     --transition: all 0.3s ease;
 }
 
+/* Dark mode variables - only applied when .dark-mode class exists */
+.dark-mode {
+    --text-color: #f8f9fa;
+    --text-light: #adb5bd;
+    --background-color: #121212;
+    --card-background: #1e1e1e;
+    --border-color: #333;
+    --primary-light: #1a5276;
+}
+
 /* Base Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f9f9f9;
+    background-color: var(--background-color);
     color: var(--text-color);
     overflow-x: hidden;
     line-height: 1.6;
+    transition: var(--transition);
+}
+
+/* Dark Mode Toggle Button */
+.dark-mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--box-shadow);
+}
+
+.dark-mode-toggle:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+.dark-mode-toggle i {
+    margin-right: 8px;
 }
 
 /* Skip to main content link for accessibility */
@@ -111,7 +126,9 @@ body {
     box-shadow: var(--box-shadow);
     transition: var(--transition);
     height: 100%;
-    border: none;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-background);
+    color: var(--text-color);
 }
 
 .card:hover {
@@ -183,10 +200,6 @@ body {
     box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
 }
 
-.btn-outline-light:hover, .btn-outline-light:focus {
-    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
-}
-
 .btn:focus {
     outline: 3px solid var(--primary-light);
     outline-offset: 2px;
@@ -205,7 +218,8 @@ body {
     bottom: 20px;
     right: 20px;
     z-index: 1000;
-    background-color: white;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 15px;
     box-shadow: var(--box-shadow);
@@ -228,27 +242,97 @@ body {
     border-radius: 30px;
 }
 
-.progress-bar-animated {
-    animation: progress-bar-stripes 1s linear infinite;
-}
-
 /* Flowcharts */
 .flowchart-container {
-    background-color: white;
+    background-color: var(--card-background);
     padding: 20px;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     margin-bottom: 30px;
     overflow: auto;
+    border: 1px solid var(--border-color);
 }
 
 .mermaid {
-    background-color: white;
+    background-color: var(--card-background);
     padding: 20px;
     border-radius: var(--border-radius);
     overflow: auto;
     display: flex;
     justify-content: center;
+}
+
+/* Quiz Styles */
+.quiz-card {
+    border-left: 5px solid var(--primary-color);
+}
+
+.quiz-option {
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    background-color: var(--card-background);
+    color: var(--text-color);
+}
+
+.quiz-option:hover {
+    background-color: var(--light-color);
+}
+
+.quiz-option.selected {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+}
+
+.quiz-option.correct {
+    background-color: #c8e6c9;
+    border-color: #4caf50;
+}
+
+.quiz-option.incorrect {
+    background-color: #ffcdd2;
+    border-color: #f44336;
+}
+
+/* Quiz option inputs - visually hidden but accessible */
+.quiz-option-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.quiz-option-input:focus + label {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Tables */
+.table {
+    color: var(--text-color);
+    background-color: var(--card-background);
+}
+
+.table-bordered, .table td, .table th {
+    border-color: var(--border-color);
+}
+
+.table-light {
+    background-color: var(--light-color);
+}
+
+.dark-mode .table-light {
+    background-color: var(--dark-color);
+    color: var(--text-color);
 }
 
 /* Badges and Indicators */
@@ -288,25 +372,6 @@ body {
     color: white;
 }
 
-/* Level Indicator Bars (for Roadmap) */
-.level-indicator-bar {
-    height: 8px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-}
-
-.beginner-level {
-    background-color: #d4f1f9;
-}
-
-.intermediate-level {
-    background-color: #ffe0b2;
-}
-
-.expert-level {
-    background-color: #ffcdd2;
-}
-
 /* Glossary Styles */
 .terms-container {
     max-height: 400px;
@@ -323,10 +388,10 @@ body {
 .terms-container dd {
     margin-bottom: 1rem;
     padding-left: 1rem;
-    border-left: 3px solid var(--light-color);
+    border-left: 3px solid var(--border-color);
 }
 
-/* Tab Pane Styling - FIXED */
+/* Tab content */
 .tab-content > .tab-pane {
     display: none;
 }
@@ -335,116 +400,15 @@ body {
     display: block;
 }
 
-/* Quiz Styles - With Color Fix */
-.quiz-card {
-    border-left: 5px solid var(--primary-color);
+/* Modal styles */
+.modal-content {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
 }
 
-.quiz-option {
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: var(--transition);
-    position: relative;
-    background-color: #fff !important; /* Force white background */
-    color: #333 !important; /* Force dark text */
-}
-
-.quiz-option:hover {
-    background-color: #f8f9fa !important;
-}
-
-.quiz-option.selected {
-    background-color: #e0f7fa !important;
-    border-color: var(--primary-color);
-}
-
-.quiz-option.correct {
-    background-color: #c8e6c9 !important;
-    border-color: #4caf50;
-}
-
-.quiz-option.incorrect {
-    background-color: #ffcdd2 !important;
-    border-color: #f44336;
-}
-
-.quiz-question.unanswered {
-    border-left: 4px solid #f39c12;
-    padding-left: 10px;
-    background-color: rgba(243, 156, 18, 0.05);
-}
-
-.quiz-question h5 {
-    color: #333 !important; /* Force question text color */
-}
-
-/* For better keyboard navigation in quizzes */
-.quiz-option-input:focus + label {
-    outline: 3px solid var(--primary-color);
-    outline-offset: 2px;
-}
-
-.quiz-option label {
-    color: #333 !important; /* Force label text color */
-}
-
-/* Make quiz option inputs visually hidden but accessible */
-.quiz-option-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-}
-
-/* Quiz tab navigation styles */
-#quizNav {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2rem;
-}
-
-#quizNav .nav-item {
-    margin: 0 0.5rem;
-}
-
-#quizSection .tab-content > .tab-pane {
-    display: none;
-}
-
-#quizSection .tab-content > .active {
-    display: block;
-}
-
-/* Quiz options container */
-.quiz-options-container {
-    margin-left: 1rem;
-}
-
-/* Override dark mode for quiz section */
-#quizSection {
-    background-color: #fff !important;
-    color: #333 !important;
-}
-
-#quizSection .card {
-    background-color: #fff !important;
-    color: #333 !important;
-}
-
-#quizSection .card-title {
-    color: var(--primary-color) !important;
-}
-
-#quizSection h2, #quizSection p, #quizSection h4, #quizSection h5 {
-    color: #333 !important;
+.modal-header, .modal-footer {
+    border-color: var(--border-color);
 }
 
 /* Hide visually but keep accessible for screen readers */
@@ -468,6 +432,15 @@ body {
         display: block;
         max-width: 100%;
     }
+    
+    .dark-mode-toggle {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+        display: block;
+        width: fit-content;
+    }
 }
 
 @media (max-width: 767.98px) {
@@ -487,18 +460,6 @@ body {
     .card {
         margin-bottom: 20px;
     }
-    
-    .d-flex.justify-content-center {
-        flex-wrap: wrap;
-    }
-    
-    .concept-badge {
-        margin-bottom: 8px;
-    }
-    
-    .terms-container {
-        max-height: 300px;
-    }
 }
 
 @media (max-width: 575.98px) {
@@ -512,97 +473,5 @@ body {
     
     .lead {
         font-size: 1rem;
-    }
-    
-    .table-responsive {
-        font-size: 0.9rem;
-    }
-    
-    .quiz-option {
-        padding: 8px;
-    }
-}
-
-/* Print Styles */
-@media print {
-    .hero-section {
-        background: none !important;
-        color: black !important;
-    }
-    
-    .nav-pills, #progressTracker, .btn {
-        display: none !important;
-    }
-    
-    .card {
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-    }
-    
-    .tab-pane {
-        display: block !important;
-        opacity: 1 !important;
-    }
-    
-    .mermaid svg {
-        max-width: 100% !important;
-    }
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --text-color: #f8f9fa;
-        --text-light: #adb5bd;
-        --primary-light: #1a5276;
-    }
-    
-    body {
-        background-color: #121212;
-        color: var(--text-color);
-    }
-    
-    .card, .flowchart-container, #progressTracker, .modal-content {
-        background-color: #1e1e1e;
-        border-color: #333;
-    }
-    
-    .table-light {
-        background-color: #2c3e50;
-        color: white;
-    }
-    
-    .modal-content {
-        background-color: #1e1e1e;
-        color: var(--text-color);
-    }
-    
-    .modal-header, .modal-footer {
-        border-color: #333;
-    }
-    
-    .table {
-        color: var(--text-color);
-    }
-    
-    .table-bordered, .table td, .table th {
-        border-color: #333;
-    }
-    
-    .table-striped tbody tr:nth-of-type(odd) {
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    .terms-container dd {
-        border-left-color: #333;
-    }
-    
-    .quiz-option {
-        background-color: #1e1e1e;
-        border-color: #333;
-    }
-    
-    .quiz-option:hover {
-        background-color: #333;
     }
 }
