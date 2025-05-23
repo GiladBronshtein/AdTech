@@ -902,3 +902,17 @@ function updateProgress(increment, progressBar, progressStatus) {
         }
     }
 }
+window.addEventListener('error', function(e) {
+    console.error('Application error:', e.error);
+    showErrorMessage('Something went wrong. Please refresh the page.');
+});
+
+function showErrorMessage(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x';
+    errorDiv.style.zIndex = '9999';
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => errorDiv.remove(), 5000);
+}
