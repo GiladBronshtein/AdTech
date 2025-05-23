@@ -29,25 +29,39 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(loadingIndicator);
     
     // Function to try different paths when loading scripts
-    function tryLoadScript(paths, index, onSuccess, onError) {
-        if (index >= paths.length) {
-            console.error(`Failed to load module: ${paths[0].split('/').pop()}`);
-            onError();
-            return;
-        }
-        
+ function loadScript(src) {
+    return new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = paths[index];
-        
-        script.onload = onSuccess;
-        
-        script.onerror = function() {
-            console.warn(`Failed to load from path: ${paths[index]}, trying next path...`);
-            tryLoadScript(paths, index + 1, onSuccess, onError);
-        };
-        
-        document.body.appendChild(script);
+        script.src = `js/${src}`;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+async function loadModules() {
+    const modules = [
+        'content-data.js',
+        'overview-content.js', 
+        'beginner-content.js',
+        'intermediate-content.js',
+        'expert-content.js',
+        'quiz-content.js',
+        'glossary-content.js',
+        'app.js'
+    ];
+    
+    try {
+        for (const module of modules) {
+            await loadScript(module);
+        }
+        hideLoader();
+        initApp();
+    } catch (error) {
+        console.error('Failed to load modules:', error);
+        showError();
     }
+}
     
     // Load modules with path fallbacks
     function loadModules(index) {
