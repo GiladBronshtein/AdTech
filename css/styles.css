@@ -351,6 +351,14 @@ body {
     display: flex;
     justify-content: center;
     color: var(--text-color);
+    min-height: 200px;
+    font-family: inherit;
+}
+
+/* Ensure Mermaid text is visible */
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
 }
 
 /* Quiz Styles */
@@ -358,6 +366,66 @@ body {
     border-left: 5px solid var(--primary-color);
 }
 
+/* Quiz Tab Navigation - Specific styling for quiz tabs */
+#quizNav {
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+#quizNav .nav-link {
+    color: var(--text-color);
+    background-color: var(--card-background);
+    border: 2px solid var(--border-color);
+    border-radius: 30px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: var(--transition);
+    margin-right: 8px;
+    margin-bottom: 8px;
+}
+
+#quizNav .nav-link.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+    transform: translateY(-2px);
+}
+
+#quizNav .nav-link:hover:not(.active) {
+    background-color: var(--primary-light);
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: var(--box-shadow);
+}
+
+/* Dark mode quiz navigation */
+.dark-mode #quizNav .nav-link:hover:not(.active) {
+    background-color: #2c3e50;
+    color: var(--text-color);
+}
+
+/* Quiz Content Panes */
+.quiz-tab-content {
+    min-height: 500px;
+}
+
+.quiz-pane {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.quiz-pane.show.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Quiz Options */
 .quiz-option {
     padding: 15px;
     margin: 8px 0;
@@ -422,6 +490,12 @@ body {
     padding: 20px;
     margin-top: 20px;
     border-width: 2px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .alert-success {
@@ -467,6 +541,12 @@ body {
 .table-striped > tbody > tr:nth-of-type(odd) > td,
 .table-striped > tbody > tr:nth-of-type(odd) > th {
     background-color: var(--light-color);
+    color: var(--text-color);
+}
+
+.table-hover > tbody > tr:hover > td,
+.table-hover > tbody > tr:hover > th {
+    background-color: var(--primary-light);
     color: var(--text-color);
 }
 
@@ -592,6 +672,39 @@ body {
     color: var(--text-color);
 }
 
+/* Accordion Styles */
+.accordion-item {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+}
+
+.accordion-button {
+    background-color: var(--card-background);
+    color: var(--text-color);
+    border: none;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--primary-light);
+    color: var(--text-color);
+}
+
+.accordion-body {
+    background-color: var(--card-background);
+    color: var(--text-color);
+}
+
+/* Feature Cards in Expert Section */
+.feature-card {
+    transition: var(--transition);
+    background-color: var(--light-color);
+}
+
+.feature-card:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.05);
+}
+
 /* Hide visually but keep accessible for screen readers */
 .visually-hidden {
     position: absolute !important;
@@ -661,6 +774,17 @@ body {
         text-align: center;
     }
     
+    #quizNav {
+        flex-direction: column;
+    }
+    
+    #quizNav .nav-link {
+        margin-bottom: 10px;
+        margin-right: 0;
+        text-align: center;
+        width: 100%;
+    }
+    
     .card {
         margin-bottom: 20px;
     }
@@ -668,6 +792,11 @@ body {
     .dark-mode-toggle {
         padding: 8px 16px;
         font-size: 0.9em;
+    }
+    
+    .mermaid {
+        padding: 10px;
+        font-size: 0.8em;
     }
 }
 
@@ -686,5 +815,10 @@ body {
     
     .flowchart-container {
         padding: 15px;
+    }
+    
+    .quiz-option {
+        padding: 12px;
+        margin: 6px 0;
     }
 }
