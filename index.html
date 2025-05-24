@@ -4,28 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="An interactive learning platform for understanding Ad Tech concepts from beginner to expert level">
+    <meta name="theme-color" content="#3498db">
     <title>Ad Tech Learning Platform</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="css/styles.css" as="style">
+    <link rel="preload" href="js/module-loader.js" as="script">
+    
     <!-- Bootstrap CSS -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Mermaid for flowcharts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.3.1/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.3.1/mermaid.min.js" crossorigin="anonymous"></script>
     <!-- Custom CSS -->
     <link href="css/styles.css" rel="stylesheet">
     <link href="css/loader-styles.css" rel="stylesheet">
+    
     <!-- Favicon -->
     <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Ad Tech Learning Platform">
+    <meta property="og:description" content="Master advertising technology from basics to expert level">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="images/AdTech.png">
+    
+    <!-- Prevent flash of unstyled content -->
+    <style>
+        .preload-hidden { opacity: 0; transition: opacity 0.3s ease; }
+        .preload-visible { opacity: 1; }
+    </style>
 </head>
-<body>
+<body class="preload-hidden">
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="visually-hidden-focusable skip-link">Skip to main content</a>
 
-      <!-- Dark Mode Toggle -->
-    <button class="dark-mode-toggle btn" id="darkModeToggle" aria-label="Toggle dark mode">
+    <!-- Dark Mode Toggle -->
+    <button class="dark-mode-toggle btn" id="darkModeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">
         <i class="fas fa-moon" aria-hidden="true"></i>
         <span class="toggle-text">Dark Mode</span>
     </button>
-    
-    <a href="#main-content" class="visually-hidden-focusable skip-link">Skip to main content</a>
     
     <!-- Header -->
     <header class="hero-section">
@@ -35,16 +55,16 @@
                     <h1 class="fw-bold mb-3">Ad Tech Learning Platform</h1>
                     <p class="lead mb-4">Understand the complex world of Advertising Technology from basics to expert level through interactive learning</p>
                     <div class="d-flex flex-wrap gap-2">
-                        <button class="btn btn-light" id="startLearningBtn" aria-label="Start learning">
+                        <button class="btn btn-light" id="startLearningBtn" aria-label="Start learning journey">
                             <i class="fas fa-play-circle me-2" aria-hidden="true"></i>Start Learning
                         </button>
-                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#aboutModal" aria-label="Learn about Ad Tech">
+                        <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#aboutModal" aria-label="Learn more about Ad Tech">
                             <i class="fas fa-info-circle me-2" aria-hidden="true"></i>About Ad Tech
                         </button>
                     </div>
                 </div>
                 <div class="col-lg-6 text-center mt-4 mt-lg-0">
-                    <img src="images/AdTech.png" alt="Ad Tech Ecosystem Illustration" class="img-fluid rounded-3 shadow">
+                    <img src="images/AdTech.png" alt="Ad Tech Ecosystem Illustration showing interconnected platforms and data flow" class="img-fluid rounded-3 shadow" loading="lazy">
                 </div>
             </div>
         </div>
@@ -53,8 +73,8 @@
     <!-- Main Content -->
     <main id="main-content" class="container my-5">
         <!-- Navigation -->
-        <nav aria-label="Main Navigation">
-            <ul class="nav nav-pills mb-4 justify-content-center flex-column flex-md-row" id="mainNav" role="tablist">
+        <nav aria-label="Main Navigation" class="mb-4">
+            <ul class="nav nav-pills justify-content-center flex-column flex-md-row" id="mainNav" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
                         <i class="fas fa-globe me-2" aria-hidden="true"></i>Overview
@@ -91,30 +111,42 @@
         <!-- Tab content -->
         <div class="tab-content">
             <!-- Overview Section -->
-            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab"></div>
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
 
             <!-- Beginner Section -->
-            <div class="tab-pane fade" id="beginnerSection" role="tabpanel" aria-labelledby="beginner-tab"></div>
+            <div class="tab-pane fade" id="beginnerSection" role="tabpanel" aria-labelledby="beginner-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
 
             <!-- Intermediate Section -->
-            <div class="tab-pane fade" id="intermediateSection" role="tabpanel" aria-labelledby="intermediate-tab"></div>
+            <div class="tab-pane fade" id="intermediateSection" role="tabpanel" aria-labelledby="intermediate-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
 
             <!-- Expert Section -->
-            <div class="tab-pane fade" id="expertSection" role="tabpanel" aria-labelledby="expert-tab"></div>
+            <div class="tab-pane fade" id="expertSection" role="tabpanel" aria-labelledby="expert-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
 
             <!-- Quiz Section -->
-            <div class="tab-pane fade" id="quizSection" role="tabpanel" aria-labelledby="quiz-tab"></div>
+            <div class="tab-pane fade" id="quizSection" role="tabpanel" aria-labelledby="quiz-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
 
             <!-- Glossary Section -->
-            <div class="tab-pane fade" id="glossarySection" role="tabpanel" aria-labelledby="glossary-tab"></div>
+            <div class="tab-pane fade" id="glossarySection" role="tabpanel" aria-labelledby="glossary-tab">
+                <!-- Content will be loaded by JavaScript -->
+            </div>
         </div>
     </main>
 
     <!-- Progress Tracker -->
-    <aside id="progressTracker" class="d-none d-lg-block" aria-live="polite">
+    <aside id="progressTracker" class="d-none d-lg-block" aria-live="polite" aria-label="Learning progress tracker">
         <h6 class="mb-2">Your Learning Progress</h6>
-        <div class="progress mb-3" role="progressbar" aria-label="Learning progress">
-            <div class="progress-bar progress-bar-animated" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        <div class="progress mb-3" role="progressbar" aria-label="Learning progress" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar progress-bar-animated" style="width: 0%;" aria-valuenow="0">0%</div>
         </div>
         <div class="small text-muted" id="progressStatus">Just started</div>
     </aside>
@@ -200,10 +232,10 @@
                     
                     <div class="row mt-4">
                         <div class="col-md-4">
-                            <div class="card">
+                            <div class="card border-info">
                                 <div class="card-body">
-                                    <h5 class="card-title text-center">Beginner</h5>
-                                    <div class="level-indicator-bar beginner-level" aria-hidden="true"></div>
+                                    <h5 class="card-title text-center text-info">Beginner</h5>
+                                    <div class="level-indicator-bar beginner-level mb-3" style="height: 4px; background: linear-gradient(to right, #2ecc71, #27ae60); border-radius: 2px;" aria-hidden="true"></div>
                                     <p class="card-text">Estimated time: 1-2 hours</p>
                                     <ul class="small">
                                         <li>Ad Tech Fundamentals</li>
@@ -215,10 +247,10 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card">
+                            <div class="card border-warning">
                                 <div class="card-body">
-                                    <h5 class="card-title text-center">Intermediate</h5>
-                                    <div class="level-indicator-bar intermediate-level" aria-hidden="true"></div>
+                                    <h5 class="card-title text-center text-warning">Intermediate</h5>
+                                    <div class="level-indicator-bar intermediate-level mb-3" style="height: 4px; background: linear-gradient(to right, #f39c12, #e67e22); border-radius: 2px;" aria-hidden="true"></div>
                                     <p class="card-text">Estimated time: 2-3 hours</p>
                                     <ul class="small">
                                         <li>Programmatic Advertising</li>
@@ -230,10 +262,10 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card">
+                            <div class="card border-danger">
                                 <div class="card-body">
-                                    <h5 class="card-title text-center">Expert</h5>
-                                    <div class="level-indicator-bar expert-level" aria-hidden="true"></div>
+                                    <h5 class="card-title text-center text-danger">Expert</h5>
+                                    <div class="level-indicator-bar expert-level mb-3" style="height: 4px; background: linear-gradient(to right, #e74c3c, #c0392b); border-radius: 2px;" aria-hidden="true"></div>
                                     <p class="card-text">Estimated time: 3-4 hours</p>
                                     <ul class="small">
                                         <li>Header Bidding</li>
@@ -254,9 +286,39 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
     <!-- Module Loader (will load all other scripts) -->
     <script src="js/module-loader.js"></script>
+    
+    <!-- Remove preload class after page loads -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.body.classList.remove('preload-hidden');
+                document.body.classList.add('preload-visible');
+            }, 100);
+        });
+        
+        // Fallback for older browsers
+        window.addEventListener('load', function() {
+            document.body.classList.remove('preload-hidden');
+            document.body.classList.add('preload-visible');
+        });
+    </script>
+    
+    <!-- Schema.org structured data for SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "EducationalOrganization",
+        "name": "Ad Tech Learning Platform",
+        "description": "Interactive learning platform for advertising technology education",
+        "url": "https://example.com",
+        "sameAs": [],
+        "courseMode": "online",
+        "educationalLevel": "beginner to expert"
+    }
+    </script>
 </body>
 </html>
