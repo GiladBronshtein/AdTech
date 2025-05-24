@@ -3,6 +3,7 @@ class DarkModeToggle {
     constructor() {
         this.darkModeKey = 'adtech-dark-mode';
         this.isInitialized = false;
+        this.mermaidInitialized = false;
         this.init();
     }
 
@@ -21,9 +22,11 @@ class DarkModeToggle {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
                 this.setupToggleButton();
+                this.initializeMermaid();
             });
         } else {
             this.setupToggleButton();
+            this.initializeMermaid();
         }
         
         this.isInitialized = true;
@@ -35,6 +38,71 @@ class DarkModeToggle {
         setTimeout(() => {
             document.documentElement.classList.remove('no-transition');
         }, 100);
+    }
+
+    initializeMermaid() {
+        if (typeof mermaid !== 'undefined' && !this.mermaidInitialized) {
+            try {
+                const isDarkMode = this.isDarkMode();
+                const theme = isDarkMode ? 'dark' : 'default';
+                
+                mermaid.initialize({ 
+                    startOnLoad: false, 
+                    theme: theme,
+                    securityLevel: 'loose',
+                    flowchart: {
+                        htmlLabels: true,
+                        curve: 'linear'
+                    },
+                    themeVariables: this.getMermaidThemeVariables(isDarkMode)
+                });
+                
+                this.mermaidInitialized = true;
+                console.log('🎨 Mermaid initialized with theme:', theme);
+            } catch (error) {
+                console.warn('⚠️ Could not initialize Mermaid:', error);
+            }
+        }
+    }
+
+    getMermaidThemeVariables(isDarkMode) {
+        if (isDarkMode) {
+            return {
+                primaryColor: '#3498db',
+                primaryTextColor: '#f8f9fa',
+                primaryBorderColor: '#444',
+                lineColor: '#adb5bd',
+                secondaryColor: '#1e1e1e',
+                tertiaryColor: '#2d2d2d',
+                background: '#1e1e1e',
+                mainBkg: '#1e1e1e',
+                secondBkg: '#2d2d2d',
+                tertiaryBkg: '#444',
+                nodeBorder: '#444',
+                clusterBkg: '#2d2d2d',
+                defaultLinkColor: '#adb5bd',
+                titleColor: '#f8f9fa',
+                edgeLabelBackground: '#1e1e1e'
+            };
+        } else {
+            return {
+                primaryColor: '#3498db',
+                primaryTextColor: '#333',
+                primaryBorderColor: '#ddd',
+                lineColor: '#333',
+                secondaryColor: '#ffffff',
+                tertiaryColor: '#f9f9f9',
+                background: '#ffffff',
+                mainBkg: '#ffffff',
+                secondBkg: '#f9f9f9',
+                tertiaryBkg: '#e1f5fe',
+                nodeBorder: '#ddd',
+                clusterBkg: '#f9f9f9',
+                defaultLinkColor: '#333',
+                titleColor: '#333',
+                edgeLabelBackground: '#ffffff'
+            };
+        }
     }
 
     setupToggleButton() {
@@ -87,6 +155,14 @@ class DarkModeToggle {
             localStorage.setItem(this.darkModeKey, isDarkMode.toString());
         }
 
+        // Update Mermaid diagrams if initialized
+        if (this.mermaidInitialized) {
+            this.updateMermaidTheme(isDarkMode);
+        }
+        
+        // Update other dynamic elements
+        this.updateDynamicElements(isDarkMode);
+
         // Dispatch custom event for other components that might need to know
         document.dispatchEvent(new CustomEvent('darkModeChanged', {
             detail: { 
@@ -94,12 +170,6 @@ class DarkModeToggle {
                 timestamp: Date.now()
             }
         }));
-
-        // Update Mermaid diagrams if they exist
-        this.updateMermaidTheme(isDarkMode);
-        
-        // Update other dynamic elements
-        this.updateDynamicElements(isDarkMode);
     }
 
     updateToggleButton() {
@@ -141,66 +211,88 @@ class DarkModeToggle {
         // Add animation class
         toggleButton.classList.add('toggle-animate');
         
-        // Create ripple effect
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple-effect');
-        toggleButton.appendChild(ripple);
-        
-        // Remove animation classes after animation completes
+        // Remove animation class after animation completes
         setTimeout(() => {
             toggleButton.classList.remove('toggle-animate');
-            if (ripple.parentNode) {
-                ripple.parentNode.removeChild(ripple);
-            }
         }, 300);
     }
 
     updateMermaidTheme(isDarkMode) {
         // Update Mermaid diagrams theme if Mermaid is available
-        if (typeof mermaid !== 'undefined') {
+        if (typeof mermaid !== 'undefined' && this.mermaidInitialized) {
             try {
-                // Clear existing mermaid content
-                const mermaidElements = document.querySelectorAll('.mermaid');
-                mermaidElements.forEach(element => {
-                    if (element.getAttribute('data-processed')) {
-                        element.removeAttribute('data-processed');
-                        // Store the original content if not already stored
-                        if (!element.dataset.originalContent) {
-                            element.dataset.originalContent = element.textContent.trim();
-                        }
-                        // Reset to original content
-                        element.innerHTML = element.dataset.originalContent;
-                    }
-                });
-
-                // Configure theme based on mode
                 const theme = isDarkMode ? 'dark' : 'default';
                 const config = {
                     startOnLoad: false,
                     theme: theme,
                     securityLevel: 'loose',
-                    darkMode: isDarkMode,
-                    themeVariables: isDarkMode ? {
-                        primaryColor: '#3498db',
-                        primaryTextColor: '#f8f9fa',
-                        primaryBorderColor: '#444',
-                        lineColor: '#adb5bd',
-                        secondaryColor: '#1e1e1e',
-                        tertiaryColor: '#2d2d2d',
-                        background: '#1e1e1e',
-                        mainBkg: '#1e1e1e',
-                        secondBkg: '#2d2d2d',
-                        tertiaryBkg: '#444'
-                    } : {}
+                    flowchart: {
+                        htmlLabels: true,
+                        curve: 'linear'
+                    },
+                    themeVariables: this.getMermaidThemeVariables(isDarkMode)
                 };
                 
+                // Clear existing processed diagrams
+                const mermaidElements = document.querySelectorAll('.mermaid');
+                mermaidElements.forEach(element => {
+                    if (element.getAttribute('data-processed')) {
+                        element.removeAttribute('data-processed');
+                        // Store original content if not already stored
+                        if (!element.dataset.originalContent) {
+                            const originalContent = element.textContent.trim();
+                            if (originalContent && !originalContent.includes('flowchart') && !originalContent.includes('graph')) {
+                                // If content looks corrupted, try to restore from nearby heading
+                                const parent = element.closest('.flowchart-container');
+                                const heading = parent ? parent.querySelector('h3, h5, h6') : null;
+                                if (heading && heading.textContent.includes('Header Bidding')) {
+                                    element.dataset.originalContent = `flowchart TD
+                                        A[User Visits Page] --> B[Header Bidding Code Executes]
+                                        B --> C[Simultaneous Bid Requests]
+                                        C --> D[SSP/Exchange 1]
+                                        C --> E[SSP/Exchange 2]
+                                        C --> F[SSP/Exchange 3]
+                                        D --> G[Bids Collected]
+                                        E --> G
+                                        F --> G
+                                        G --> H[Highest Bid Selected]
+                                        H --> I[Passed to Ad Server]
+                                        I --> J{Compare with Direct Deals}
+                                        J --> K[Final Winner Determined]
+                                        K --> L[Ad Served to User]`;
+                                } else if (heading && heading.textContent.includes('Data Flow')) {
+                                    element.dataset.originalContent = `flowchart LR
+                                        A[User Data Collection] --> B[Data Management Platform]
+                                        B --> C[Audience Segmentation]
+                                        C --> D[DSP - Targeting]
+                                        B --> E[Publisher Insights]
+                                        E --> F[SSP - Inventory Valuation]
+                                        G[Campaign Performance] --> H[Optimization Algorithms]
+                                        H --> D
+                                        I[Identity Resolution] --> B
+                                        J[3rd Party Data Providers] --> B
+                                        K[1st Party Data] --> B
+                                        L[Ad Interactions] --> G
+                                        M[Conversions] --> G`;
+                                } else {
+                                    element.dataset.originalContent = originalContent;
+                                }
+                            } else {
+                                element.dataset.originalContent = originalContent;
+                            }
+                        }
+                        // Clear the element and restore original content
+                        element.innerHTML = element.dataset.originalContent || '';
+                    }
+                });
+
                 // Reinitialize Mermaid with new theme
                 mermaid.initialize(config);
                 
-                // Re-render existing diagrams with delay to ensure proper theme application
+                // Re-render diagrams with delay
                 setTimeout(() => {
                     mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
-                }, 150);
+                }, 200);
                 
                 console.log(`🎨 Mermaid theme updated to: ${theme}`);
             } catch (error) {
@@ -235,27 +327,27 @@ class DarkModeToggle {
                 progress.style.backgroundColor = '';
             }
         });
+    }
 
-        // Update any alert elements
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(alert => {
-            if (isDarkMode && !alert.classList.contains('alert-success') && 
-                !alert.classList.contains('alert-warning') && 
-                !alert.classList.contains('alert-danger')) {
-                alert.style.backgroundColor = '#2d2d2d';
-                alert.style.color = '#f8f9fa';
-                alert.style.borderColor = '#444';
-            } else if (!isDarkMode) {
-                // Reset to default styles for light mode
-                if (!alert.classList.contains('alert-success') && 
-                    !alert.classList.contains('alert-warning') && 
-                    !alert.classList.contains('alert-danger')) {
-                    alert.style.backgroundColor = '';
-                    alert.style.color = '';
-                    alert.style.borderColor = '';
-                }
+    // Force refresh of all Mermaid diagrams
+    refreshMermaidDiagrams() {
+        if (typeof mermaid !== 'undefined' && this.mermaidInitialized) {
+            try {
+                // Clear all processed diagrams
+                const mermaidElements = document.querySelectorAll('.mermaid[data-processed]');
+                mermaidElements.forEach(element => {
+                    element.removeAttribute('data-processed');
+                    element.innerHTML = element.dataset.originalContent || element.innerHTML;
+                });
+
+                // Re-initialize all diagrams
+                setTimeout(() => {
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
+                }, 100);
+            } catch (error) {
+                console.warn('Could not refresh Mermaid diagrams:', error);
             }
-        });
+        }
     }
 
     // Public method to check current mode
@@ -306,22 +398,6 @@ const toggleAnimationCSS = `
         overflow: hidden;
     }
     
-    .ripple-effect {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(52, 152, 219, 0.3);
-        transform: scale(0);
-        animation: ripple 0.6s linear;
-        pointer-events: none;
-    }
-    
-    @keyframes ripple {
-        to {
-            transform: scale(4);
-            opacity: 0;
-        }
-    }
-    
     /* Prevent transition flash on page load */
     .no-transition * {
         transition: none !important;
@@ -365,34 +441,6 @@ if (window.matchMedia) {
         }
     });
 }
-
-// Listen for Mermaid initialization events to ensure proper theming
-document.addEventListener('DOMContentLoaded', () => {
-    // Listen for dynamic content changes that might add new Mermaid diagrams
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'childList') {
-                const addedNodes = Array.from(mutation.addedNodes);
-                const hasMermaid = addedNodes.some(node => 
-                    node.nodeType === 1 && 
-                    (node.classList?.contains('mermaid') || node.querySelector?.('.mermaid'))
-                );
-                
-                if (hasMermaid && window.darkModeToggle) {
-                    // Refresh themes for new Mermaid diagrams
-                    setTimeout(() => {
-                        window.darkModeToggle.refreshThemes();
-                    }, 100);
-                }
-            }
-        });
-    });
-    
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-});
 
 // Export for module systems if needed
 if (typeof module !== 'undefined' && module.exports) {
