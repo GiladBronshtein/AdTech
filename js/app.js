@@ -9,13 +9,42 @@ console.log('Available modules:', {
     glossaryContent: typeof glossaryContent !== 'undefined'
 });
 
+// Global app state
+const appState = {
+    initialized: false,
+    currentTab: 'overview',
+    contentLoaded: {},
+    mermaidInitialized: false
+};
+
 // Initialize Mermaid for flowcharts
 document.addEventListener('DOMContentLoaded', function() {
-    mermaid.initialize({ 
-        startOnLoad: true, 
-        theme: 'default',
-        securityLevel: 'loose' // Allows rendering diagrams from content strings
-    });
+    // Initialize Mermaid with proper configuration
+    if (typeof mermaid !== 'undefined') {
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const theme = isDarkMode ? 'dark' : 'default';
+        
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: theme,
+            securityLevel: 'loose',
+            darkMode: isDarkMode,
+            flowchart: {
+                htmlLabels: true,
+                curve: 'cardinal'
+            },
+            themeVariables: isDarkMode ? {
+                primaryColor: '#3498db',
+                primaryTextColor: '#f8f9fa',
+                primaryBorderColor: '#444',
+                lineColor: '#adb5bd',
+                secondaryColor: '#1e1e1e',
+                tertiaryColor: '#2d2d2d'
+            } : {}
+        });
+        appState.mermaidInitialized = true;
+        console.log('✅ Mermaid initialized with theme:', theme);
+    }
 
     // Initialize the application
     initApp();
@@ -25,6 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize the main application
  */
 function initApp() {
+    if (appState.initialized) {
+        console.log('App already initialized, skipping...');
+        return;
+    }
+
+    console.log('🚀 Initializing application...');
+
     // Load initial content
     loadContent();
 
@@ -36,6 +72,20 @@ function initApp() {
     
     // Force the overview tab to be active and visible
     setTimeout(() => {
+        activateOverviewTab();
+        // Initialize Mermaid diagrams after content is loaded
+        initializeMermaidDiagrams();
+    }, 100);
+
+    appState.initialized = true;
+    console.log('✅ Application initialized successfully');
+}
+
+/**
+ * Activate the overview tab and ensure it's visible
+ */
+function activateOverviewTab() {
+    try {
         // Hide all tab panes first
         document.querySelectorAll('.tab-pane').forEach(pane => {
             pane.classList.remove('show', 'active');
@@ -58,50 +108,111 @@ function initApp() {
             
             // Show the content
             overviewContent.classList.add('show', 'active');
+            
+            appState.currentTab = 'overview';
+            console.log('✅ Overview tab activated');
+        } else {
+            console.warn('⚠️ Overview tab or content not found');
         }
-    }, 500);
+    } catch (error) {
+        console.error('❌ Error activating overview tab:', error);
+    }
 }
 
 /**
  * Initialize Bootstrap tooltips
  */
 function initializeTooltips() {
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-    [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+    try {
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        console.log('✅ Tooltips initialized');
+    } catch (error) {
+        console.warn('⚠️ Could not initialize tooltips:', error);
+    }
+}
+
+/**
+ * Initialize or re-initialize Mermaid diagrams
+ */
+function initializeMermaidDiagrams() {
+    if (typeof mermaid !== 'undefined' && appState.mermaidInitialized) {
+        try {
+            // Find all mermaid elements
+            const mermaidElements = document.querySelectorAll('.mermaid');
+            
+            if (mermaidElements.length > 0) {
+                console.log(`🎨 Initializing ${mermaidElements.length} Mermaid diagrams...`);
+                
+                // Reset processed attribute for re-rendering
+                mermaidElements.forEach(element => {
+                    if (element.getAttribute('data-processed')) {
+                        element.removeAttribute('data-processed');
+                    }
+                });
+                
+                // Initialize diagrams
+                mermaid.init(undefined, mermaidElements);
+                console.log('✅ Mermaid diagrams initialized');
+            }
+        } catch (error) {
+            console.warn('⚠️ Error initializing Mermaid diagrams:', error);
+        }
+    }
 }
 
 /**
  * Load content for each section of the application
  */
 function loadContent() {
-    console.log("Loading content...");
+    console.log("📦 Loading content...");
     
     // Check if the DOM elements exist before trying to load content
-    const overviewSection = document.getElementById('overview');
-    const beginnerSection = document.getElementById('beginnerSection');
-    const intermediateSection = document.getElementById('intermediateSection');
-    const expertSection = document.getElementById('expertSection');
-    const quizSection = document.getElementById('quizSection');
-    const glossarySection = document.getElementById('glossarySection');
+    const sections = {
+        overview: document.getElementById('overview'),
+        beginner: document.getElementById('beginnerSection'),
+        intermediate: document.getElementById('intermediateSection'),
+        expert: document.getElementById('expertSection'),
+        quiz: document.getElementById('quizSection'),
+        glossary: document.getElementById('glossarySection')
+    };
     
-    console.log("DOM Elements:", {
-        overview: overviewSection ? true : false,
-        beginner: beginnerSection ? true : false,
-        intermediate: intermediateSection ? true : false,
-        expert: expertSection ? true : false,
-        quiz: quizSection ? true : false,
-        glossary: glossarySection ? true : false
+    console.log("🔍 DOM Elements found:", {
+        overview: !!sections.overview,
+        beginner: !!sections.beginner,
+        intermediate: !!sections.intermediate,
+        expert: !!sections.expert,
+        quiz: !!sections.quiz,
+        glossary: !!sections.glossary
     });
     
-    if (overviewSection) loadOverviewSection();
-    if (beginnerSection) loadBeginnerSection();
-    if (intermediateSection) loadIntermediateSection();
-    if (expertSection) loadExpertSection();
-    if (quizSection) loadQuizSection();
-    if (glossarySection) loadGlossarySection();
+    // Load each section if it exists and hasn't been loaded yet
+    if (sections.overview && !appState.contentLoaded.overview) {
+        loadOverviewSection();
+        appState.contentLoaded.overview = true;
+    }
+    if (sections.beginner && !appState.contentLoaded.beginner) {
+        loadBeginnerSection();
+        appState.contentLoaded.beginner = true;
+    }
+    if (sections.intermediate && !appState.contentLoaded.intermediate) {
+        loadIntermediateSection();
+        appState.contentLoaded.intermediate = true;
+    }
+    if (sections.expert && !appState.contentLoaded.expert) {
+        loadExpertSection();
+        appState.contentLoaded.expert = true;
+    }
+    if (sections.quiz && !appState.contentLoaded.quiz) {
+        loadQuizSection();
+        appState.contentLoaded.quiz = true;
+    }
+    if (sections.glossary && !appState.contentLoaded.glossary) {
+        loadGlossarySection();
+        appState.contentLoaded.glossary = true;
+    }
 
-    // Re-initialize Mermaid after content is loaded
-    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+    console.log('✅ Content loading completed');
 }
 
 /**
@@ -109,22 +220,34 @@ function loadContent() {
  */
 function loadOverviewSection() {
     const overviewSection = document.getElementById('overview');
-    if (!overviewSection) return;
+    if (!overviewSection || typeof contentData === 'undefined' || !contentData.overview) {
+        console.warn('⚠️ Overview section or content not available');
+        return;
+    }
 
-    const overviewData = contentData.overview;
-    
-    overviewSection.innerHTML = `
-        <h2 class="section-title">${overviewData.title}</h2>
-        ${overviewData.intro}
-    `;
-    
-    // Add components
-    overviewData.components.forEach(component => {
-        overviewSection.innerHTML += `
-            <h3 class="mb-4">${component.title}</h3>
-            ${component.content}
+    try {
+        const overviewData = contentData.overview;
+        
+        // Clear existing content to prevent duplicates
+        overviewSection.innerHTML = '';
+        
+        overviewSection.innerHTML = `
+            <h2 class="section-title">${overviewData.title}</h2>
+            ${overviewData.intro}
         `;
-    });
+        
+        // Add components
+        overviewData.components.forEach(component => {
+            overviewSection.innerHTML += `
+                <h3 class="mb-4">${component.title}</h3>
+                ${component.content}
+            `;
+        });
+        
+        console.log('✅ Overview section loaded');
+    } catch (error) {
+        console.error('❌ Error loading overview section:', error);
+    }
 }
 
 /**
@@ -132,22 +255,34 @@ function loadOverviewSection() {
  */
 function loadBeginnerSection() {
     const beginnerSection = document.getElementById('beginnerSection');
-    if (!beginnerSection) return;
+    if (!beginnerSection || typeof contentData === 'undefined' || !contentData.beginner) {
+        console.warn('⚠️ Beginner section or content not available');
+        return;
+    }
 
-    const beginnerData = contentData.beginner;
-    
-    beginnerSection.innerHTML = `
-        <h2 class="section-title">${beginnerData.title}</h2>
-        ${beginnerData.intro}
-    `;
-    
-    // Add sections
-    beginnerData.sections.forEach(section => {
-        beginnerSection.innerHTML += `
-            <h3 class="mb-4">${section.title}</h3>
-            ${section.content}
+    try {
+        const beginnerData = contentData.beginner;
+        
+        // Clear existing content to prevent duplicates
+        beginnerSection.innerHTML = '';
+        
+        beginnerSection.innerHTML = `
+            <h2 class="section-title">${beginnerData.title}</h2>
+            ${beginnerData.intro}
         `;
-    });
+        
+        // Add sections
+        beginnerData.sections.forEach(section => {
+            beginnerSection.innerHTML += `
+                <h3 class="mb-4">${section.title}</h3>
+                ${section.content}
+            `;
+        });
+        
+        console.log('✅ Beginner section loaded');
+    } catch (error) {
+        console.error('❌ Error loading beginner section:', error);
+    }
 }
 
 /**
@@ -155,22 +290,34 @@ function loadBeginnerSection() {
  */
 function loadIntermediateSection() {
     const intermediateSection = document.getElementById('intermediateSection');
-    if (!intermediateSection) return;
+    if (!intermediateSection || typeof contentData === 'undefined' || !contentData.intermediate) {
+        console.warn('⚠️ Intermediate section or content not available');
+        return;
+    }
 
-    const intermediateData = contentData.intermediate;
-    
-    intermediateSection.innerHTML = `
-        <h2 class="section-title">${intermediateData.title}</h2>
-        ${intermediateData.intro}
-    `;
-    
-    // Add sections
-    intermediateData.sections.forEach(section => {
-        intermediateSection.innerHTML += `
-            <h3 class="mb-4">${section.title}</h3>
-            ${section.content}
+    try {
+        const intermediateData = contentData.intermediate;
+        
+        // Clear existing content to prevent duplicates
+        intermediateSection.innerHTML = '';
+        
+        intermediateSection.innerHTML = `
+            <h2 class="section-title">${intermediateData.title}</h2>
+            ${intermediateData.intro}
         `;
-    });
+        
+        // Add sections
+        intermediateData.sections.forEach(section => {
+            intermediateSection.innerHTML += `
+                <h3 class="mb-4">${section.title}</h3>
+                ${section.content}
+            `;
+        });
+        
+        console.log('✅ Intermediate section loaded');
+    } catch (error) {
+        console.error('❌ Error loading intermediate section:', error);
+    }
 }
 
 /**
@@ -178,21 +325,33 @@ function loadIntermediateSection() {
  */
 function loadExpertSection() {
     const expertSection = document.getElementById('expertSection');
-    if (!expertSection) return;
+    if (!expertSection || typeof contentData === 'undefined' || !contentData.expert) {
+        console.warn('⚠️ Expert section or content not available');
+        return;
+    }
 
-    const expertData = contentData.expert;
-    
-    expertSection.innerHTML = `
-        <h2 class="section-title">${expertData.title}</h2>
-        ${expertData.intro}
-    `;
-    
-    // Add sections
-    expertData.sections.forEach(section => {
-        expertSection.innerHTML += `
-            ${section.content}
+    try {
+        const expertData = contentData.expert;
+        
+        // Clear existing content to prevent duplicates
+        expertSection.innerHTML = '';
+        
+        expertSection.innerHTML = `
+            <h2 class="section-title">${expertData.title}</h2>
+            ${expertData.intro}
         `;
-    });
+        
+        // Add sections
+        expertData.sections.forEach(section => {
+            expertSection.innerHTML += `
+                ${section.content}
+            `;
+        });
+        
+        console.log('✅ Expert section loaded');
+    } catch (error) {
+        console.error('❌ Error loading expert section:', error);
+    }
 }
 
 /**
@@ -200,43 +359,55 @@ function loadExpertSection() {
  */
 function loadQuizSection() {
     const quizSection = document.getElementById('quizSection');
-    if (!quizSection) return;
+    if (!quizSection || typeof contentData === 'undefined' || !contentData.quiz) {
+        console.warn('⚠️ Quiz section or content not available');
+        return;
+    }
 
-    quizSection.innerHTML = `
-        <h2 class="section-title">Test Your Ad Tech Knowledge</h2>
-        <p class="lead mb-5">Challenge yourself with these quizzes to reinforce your understanding of Ad Tech concepts.</p>
+    try {
+        // Clear existing content to prevent duplicates
+        quizSection.innerHTML = '';
+        
+        quizSection.innerHTML = `
+            <h2 class="section-title">Test Your Ad Tech Knowledge</h2>
+            <p class="lead mb-5">Challenge yourself with these quizzes to reinforce your understanding of Ad Tech concepts.</p>
 
-        <!-- Quiz Navigation -->
-        <ul class="nav nav-pills mb-4 justify-content-center" id="quizNav">
-            <li class="nav-item">
-                <button class="nav-link active" id="beginner-quiz-tab" data-bs-toggle="pill" data-bs-target="#beginnerQuiz" type="button" role="tab" aria-controls="beginnerQuiz" aria-selected="true">Beginner</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="intermediate-quiz-tab" data-bs-toggle="pill" data-bs-target="#intermediateQuiz" type="button" role="tab" aria-controls="intermediateQuiz" aria-selected="false">Intermediate</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="expert-quiz-tab" data-bs-toggle="pill" data-bs-target="#expertQuiz" type="button" role="tab" aria-controls="expertQuiz" aria-selected="false">Expert</button>
-            </li>
-        </ul>
+            <!-- Quiz Navigation -->
+            <ul class="nav nav-pills mb-4 justify-content-center" id="quizNav">
+                <li class="nav-item">
+                    <button class="nav-link active" id="beginner-quiz-tab" data-bs-toggle="pill" data-bs-target="#beginnerQuiz" type="button" role="tab" aria-controls="beginnerQuiz" aria-selected="true">Beginner</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="intermediate-quiz-tab" data-bs-toggle="pill" data-bs-target="#intermediateQuiz" type="button" role="tab" aria-controls="intermediateQuiz" aria-selected="false">Intermediate</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="expert-quiz-tab" data-bs-toggle="pill" data-bs-target="#expertQuiz" type="button" role="tab" aria-controls="expertQuiz" aria-selected="false">Expert</button>
+                </li>
+            </ul>
 
-        <!-- Quiz Content -->
-        <div class="tab-content">
-            <!-- Beginner Quiz -->
-            <div class="tab-pane fade show active" id="beginnerQuiz" role="tabpanel" aria-labelledby="beginner-quiz-tab"></div>
-            <!-- Intermediate Quiz -->
-            <div class="tab-pane fade" id="intermediateQuiz" role="tabpanel" aria-labelledby="intermediate-quiz-tab"></div>
-            <!-- Expert Quiz -->
-            <div class="tab-pane fade" id="expertQuiz" role="tabpanel" aria-labelledby="expert-quiz-tab"></div>
-        </div>
-    `;
+            <!-- Quiz Content -->
+            <div class="tab-content">
+                <!-- Beginner Quiz -->
+                <div class="tab-pane fade show active" id="beginnerQuiz" role="tabpanel" aria-labelledby="beginner-quiz-tab"></div>
+                <!-- Intermediate Quiz -->
+                <div class="tab-pane fade" id="intermediateQuiz" role="tabpanel" aria-labelledby="intermediate-quiz-tab"></div>
+                <!-- Expert Quiz -->
+                <div class="tab-pane fade" id="expertQuiz" role="tabpanel" aria-labelledby="expert-quiz-tab"></div>
+            </div>
+        `;
 
-    // Load quiz content for each level
-    loadQuizContent('beginnerQuiz', contentData.quiz.beginner);
-    loadQuizContent('intermediateQuiz', contentData.quiz.intermediate);
-    loadQuizContent('expertQuiz', contentData.quiz.expert);
-    
-    // Set up quiz tab navigation
-    setupQuizTabNavigation();
+        // Load quiz content for each level
+        loadQuizContent('beginnerQuiz', contentData.quiz.beginner);
+        loadQuizContent('intermediateQuiz', contentData.quiz.intermediate);
+        loadQuizContent('expertQuiz', contentData.quiz.expert);
+        
+        // Set up quiz tab navigation
+        setupQuizTabNavigation();
+        
+        console.log('✅ Quiz section loaded');
+    } catch (error) {
+        console.error('❌ Error loading quiz section:', error);
+    }
 }
 
 /**
@@ -281,45 +452,57 @@ function setupQuizTabNavigation() {
  */
 function loadGlossarySection() {
     const glossarySection = document.getElementById('glossarySection');
-    if (!glossarySection) return;
+    if (!glossarySection || typeof contentData === 'undefined' || !contentData.glossary) {
+        console.warn('⚠️ Glossary section or content not available');
+        return;
+    }
 
-    glossarySection.innerHTML = `
-        <h2 class="section-title">Ad Tech Glossary</h2>
-        <p class="lead mb-5">A comprehensive dictionary of Ad Tech terminology from A to Z.</p>
+    try {
+        // Clear existing content to prevent duplicates
+        glossarySection.innerHTML = '';
+        
+        glossarySection.innerHTML = `
+            <h2 class="section-title">Ad Tech Glossary</h2>
+            <p class="lead mb-5">A comprehensive dictionary of Ad Tech terminology from A to Z.</p>
 
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" class="form-control" id="glossarySearch" placeholder="Search terms..." aria-label="Search glossary terms">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="glossarySearch" placeholder="Search terms..." aria-label="Search glossary terms">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-8 mb-4">
-                <div class="d-flex justify-content-start justify-content-md-end">
-                    <div class="btn-group" id="alphabetFilter" role="group" aria-label="Alphabet filter">
-                        <button class="btn btn-outline-primary active" data-filter="all">All</button>
-                        <button class="btn btn-outline-primary" data-filter="a">A</button>
-                        <button class="btn btn-outline-primary" data-filter="b">B</button>
-                        <button class="btn btn-outline-primary" data-filter="c">C</button>
-                        <button class="btn btn-outline-primary" data-filter="d">D</button>
-                        <button class="btn btn-outline-primary" data-filter="p">P</button>
-                        <button class="btn btn-outline-primary" data-filter="r">R</button>
-                        <button class="btn btn-outline-primary" data-filter="s">S</button>
-                        <button class="btn btn-outline-primary" data-filter="other">Other</button>
+                <div class="col-md-8 mb-4">
+                    <div class="d-flex justify-content-start justify-content-md-end">
+                        <div class="btn-group" id="alphabetFilter" role="group" aria-label="Alphabet filter">
+                            <button class="btn btn-outline-primary active" data-filter="all">All</button>
+                            <button class="btn btn-outline-primary" data-filter="a">A</button>
+                            <button class="btn btn-outline-primary" data-filter="b">B</button>
+                            <button class="btn btn-outline-primary" data-filter="c">C</button>
+                            <button class="btn btn-outline-primary" data-filter="d">D</button>
+                            <button class="btn btn-outline-primary" data-filter="p">P</button>
+                            <button class="btn btn-outline-primary" data-filter="r">R</button>
+                            <button class="btn btn-outline-primary" data-filter="s">S</button>
+                            <button class="btn btn-outline-primary" data-filter="other">Other</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-body">
-                <div class="terms-container" id="glossaryTerms"></div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="terms-container" id="glossaryTerms"></div>
+                </div>
             </div>
-        </div>
-    `;
+        `;
 
-    // Load glossary terms
-    loadGlossaryTerms();
+        // Load glossary terms
+        loadGlossaryTerms();
+        
+        console.log('✅ Glossary section loaded');
+    } catch (error) {
+        console.error('❌ Error loading glossary section:', error);
+    }
 }
 
 /**
@@ -329,55 +512,63 @@ function loadGlossarySection() {
  */
 function loadQuizContent(quizId, quizData) {
     const quizContainer = document.getElementById(quizId);
-    if (!quizContainer) return;
+    if (!quizContainer || !quizData) {
+        console.warn(`⚠️ Quiz container ${quizId} or data not found`);
+        return;
+    }
 
-    let quizHtml = `
-        <div class="card quiz-card mb-4">
-            <div class="card-body">
-                <h4 class="card-title">${quizData.title}</h4>
-                <form id="${quizId}Form" class="quiz-form">
-                    <div id="${quizId}Container">
-    `;
-
-    // Add questions
-    quizData.questions.forEach((question, index) => {
-        quizHtml += `
-            <div class="quiz-question mb-4">
-                <h5>${index + 1}. ${question.question}</h5>
-                <div class="quiz-options-container">
+    try {
+        let quizHtml = `
+            <div class="card quiz-card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title">${quizData.title}</h4>
+                    <form id="${quizId}Form" class="quiz-form">
+                        <div id="${quizId}Container">
         `;
 
-        // Add options
-        question.options.forEach((option, optIndex) => {
-            const optionId = `${quizId}_q${index}_opt${optIndex}`;
-            const isCorrect = optIndex === question.correctIndex;
+        // Add questions
+        quizData.questions.forEach((question, index) => {
             quizHtml += `
-                <div class="quiz-option" ${isCorrect ? 'data-correct="true"' : ''}>
-                    <input type="radio" name="${quizId}_question${index}" id="${optionId}" value="${optIndex}" class="quiz-option-input">
-                    <label for="${optionId}" class="d-block w-100 p-2">${option}</label>
+                <div class="quiz-question mb-4">
+                    <h5>${index + 1}. ${question.question}</h5>
+                    <div class="quiz-options-container">
+            `;
+
+            // Add options
+            question.options.forEach((option, optIndex) => {
+                const optionId = `${quizId}_q${index}_opt${optIndex}`;
+                const isCorrect = optIndex === question.correctIndex;
+                quizHtml += `
+                    <div class="quiz-option" ${isCorrect ? 'data-correct="true"' : ''}>
+                        <input type="radio" name="${quizId}_question${index}" id="${optionId}" value="${optIndex}" class="quiz-option-input">
+                        <label for="${optionId}" class="d-block w-100 p-2">${option}</label>
+                    </div>
+                `;
+            });
+
+            quizHtml += `
+                    </div>
                 </div>
             `;
         });
 
+        // Add buttons
         quizHtml += `
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary" id="check${quizId.charAt(0).toUpperCase() + quizId.slice(1)}">Check Answers</button>
+                            <button type="button" class="btn btn-outline-primary ms-2" id="reset${quizId.charAt(0).toUpperCase() + quizId.slice(1)}">Reset Quiz</button>
+                        </div>
+                    </div>
+                    </form>
                 </div>
             </div>
         `;
-    });
 
-    // Add buttons
-    quizHtml += `
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-primary" id="check${quizId.charAt(0).toUpperCase() + quizId.slice(1)}">Check Answers</button>
-                        <button type="button" class="btn btn-outline-primary ms-2" id="reset${quizId.charAt(0).toUpperCase() + quizId.slice(1)}">Reset Quiz</button>
-                    </div>
-                </div>
-                </form>
-            </div>
-        </div>
-    `;
-
-    quizContainer.innerHTML = quizHtml;
+        quizContainer.innerHTML = quizHtml;
+        console.log(`✅ Quiz content loaded for ${quizId}`);
+    } catch (error) {
+        console.error(`❌ Error loading quiz content for ${quizId}:`, error);
+    }
 }
 
 /**
@@ -385,33 +576,42 @@ function loadQuizContent(quizId, quizData) {
  */
 function loadGlossaryTerms() {
     const glossaryTermsContainer = document.getElementById('glossaryTerms');
-    if (!glossaryTermsContainer) return;
+    if (!glossaryTermsContainer || typeof contentData === 'undefined' || !contentData.glossary) {
+        console.warn('⚠️ Glossary terms container or content not available');
+        return;
+    }
 
-    // Clear any existing content
-    glossaryTermsContainer.innerHTML = '';
+    try {
+        // Clear any existing content
+        glossaryTermsContainer.innerHTML = '';
 
-    // Load terms for each letter
-    for (const [letter, terms] of Object.entries(contentData.glossary)) {
-        let termsHtml = `
-            <div class="term-group" data-group="${letter}">
-                <h4 class="text-primary">${letter.toUpperCase()}</h4>
-                <dl>
-        `;
-
-        // Add terms and definitions
-        terms.forEach(item => {
-            termsHtml += `
-                <dt>${item.term}</dt>
-                <dd>${item.definition}</dd>
+        // Load terms for each letter
+        for (const [letter, terms] of Object.entries(contentData.glossary)) {
+            let termsHtml = `
+                <div class="term-group" data-group="${letter}">
+                    <h4 class="text-primary">${letter.toUpperCase()}</h4>
+                    <dl>
             `;
-        });
 
-        termsHtml += `
-                </dl>
-            </div>
-        `;
+            // Add terms and definitions
+            terms.forEach(item => {
+                termsHtml += `
+                    <dt>${item.term}</dt>
+                    <dd>${item.definition}</dd>
+                `;
+            });
 
-        glossaryTermsContainer.innerHTML += termsHtml;
+            termsHtml += `
+                    </dl>
+                </div>
+            `;
+
+            glossaryTermsContainer.innerHTML += termsHtml;
+        }
+        
+        console.log('✅ Glossary terms loaded');
+    } catch (error) {
+        console.error('❌ Error loading glossary terms:', error);
     }
 }
 
@@ -419,6 +619,8 @@ function loadGlossaryTerms() {
  * Set up event listeners for interactive elements
  */
 function setupEventListeners() {
+    console.log('🎧 Setting up event listeners...');
+    
     // Progress tracking
     const progressBar = document.querySelector('#progressTracker .progress-bar');
     const progressStatus = document.getElementById('progressStatus');
@@ -433,94 +635,50 @@ function setupEventListeners() {
     // Glossary functionality
     setupGlossaryListeners();
     
-    // Tab switching functionality - FIX FOR NAVIGATION
+    // Tab switching functionality
     setupTabNavigation();
+    
+    // Dark mode change listener for Mermaid updates
+    document.addEventListener('darkModeChanged', function(e) {
+        console.log('🌙 Dark mode changed, updating Mermaid diagrams...');
+        setTimeout(() => {
+            initializeMermaidDiagrams();
+        }, 100);
+    });
+    
+    console.log('✅ Event listeners set up');
 }
 
 /**
  * Set up tab navigation event listeners
  */
 function setupTabNavigation() {
-    // Let Bootstrap handle tabs, just add our custom logic
+    // Use Bootstrap's tab events for better integration
     document.querySelectorAll('#mainNav .nav-link').forEach(tab => {
         tab.addEventListener('shown.bs.tab', function(e) {
-            // Re-initialize Mermaid diagrams in the new tab
+            const targetId = e.target.getAttribute('data-bs-target');
+            appState.currentTab = targetId?.replace('#', '').replace('Section', '') || 'overview';
+            
+            console.log(`📑 Switched to tab: ${appState.currentTab}`);
+            
+            // Re-initialize Mermaid diagrams in the new tab with delay
             setTimeout(() => {
-                if (typeof mermaid !== 'undefined') {
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-                }
-            }, 100);
+                initializeMermaidDiagrams();
+            }, 150);
+        });
+        
+        // Also handle click events for proper tab switching
+        tab.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('data-bs-target');
+            
+            // Update Bootstrap tab state
+            const tabTrigger = new bootstrap.Tab(this);
+            tabTrigger.show();
         });
     });
 }
-
-// function setupTabNavigation() {
-//     const mainNavTabs = document.querySelectorAll('#mainNav .nav-link');
-    
-//     mainNavTabs.forEach(tab => {
-//         tab.addEventListener('click', function(e) {
-//             e.preventDefault();
-            
-//             // Get the target content ID
-//             const targetId = this.getAttribute('data-bs-target');
-            
-//             // Hide all tab panes
-//             document.querySelectorAll('.tab-pane').forEach(pane => {
-//                 pane.classList.remove('show', 'active');
-//             });
-            
-//             // Deactivate all tabs
-//             mainNavTabs.forEach(t => {
-//                 t.classList.remove('active');
-//                 t.setAttribute('aria-selected', 'false');
-//             });
-            
-//             // Activate this tab
-//             this.classList.add('active');
-//             this.setAttribute('aria-selected', 'true');
-            
-//             // Show the target content
-//             const targetPane = document.querySelector(targetId);
-//             if (targetPane) {
-//                 targetPane.classList.add('show', 'active');
-                
-//                 // Special handling for the Quiz section - initialize the first quiz tab
-//                 if (targetId === '#quizSection') {
-//                     // Make sure the beginner quiz tab is active by default
-//                     const beginnerQuizTab = document.getElementById('beginner-quiz-tab');
-//                     const beginnerQuiz = document.getElementById('beginnerQuiz');
-                    
-//                     if (beginnerQuizTab && beginnerQuiz) {
-//                         // Activate the beginner tab
-//                         document.querySelectorAll('#quizNav .nav-link').forEach(t => {
-//                             t.classList.remove('active');
-//                             t.setAttribute('aria-selected', 'false');
-//                         });
-                        
-//                         beginnerQuizTab.classList.add('active');
-//                         beginnerQuizTab.setAttribute('aria-selected', 'true');
-                        
-//                         // Show beginner quiz content
-//                         document.querySelectorAll('#quizSection .tab-pane').forEach(p => {
-//                             p.classList.remove('show', 'active');
-//                         });
-                        
-//                         beginnerQuiz.classList.add('show', 'active');
-//                     }
-//                 }
-//             }
-            
-//             // Re-initialize Mermaid diagrams in the new tab
-//             setTimeout(() => {
-//                 if (typeof mermaid !== 'undefined') {
-//                     mermaid.init(undefined, document.querySelectorAll('.mermaid'));
-//                 }
-//             }, 100);
-//         });
-//     });
-// }
-
-
 
 function setupNavigationListeners(progressBar, progressStatus, progress) {
     // Initial navigation buttons
@@ -530,22 +688,34 @@ function setupNavigationListeners(progressBar, progressStatus, progress) {
     
     if (startLearningBtn) {
         startLearningBtn.addEventListener('click', function() {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]').click();
-            updateProgress(5, progressBar, progressStatus);
+            const beginnerTab = document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]');
+            if (beginnerTab) {
+                const tabTrigger = new bootstrap.Tab(beginnerTab);
+                tabTrigger.show();
+                updateProgress(5, progressBar, progressStatus);
+            }
         });
     }
     
     if (startLearningModalBtn) {
         startLearningModalBtn.addEventListener('click', function() {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]').click();
-            updateProgress(5, progressBar, progressStatus);
+            const beginnerTab = document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]');
+            if (beginnerTab) {
+                const tabTrigger = new bootstrap.Tab(beginnerTab);
+                tabTrigger.show();
+                updateProgress(5, progressBar, progressStatus);
+            }
         });
     }
     
     if (beginnerBtn) {
         beginnerBtn.addEventListener('click', function() {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]').click();
-            updateProgress(5, progressBar, progressStatus);
+            const beginnerTab = document.querySelector('#mainNav .nav-link[data-bs-target="#beginnerSection"]');
+            if (beginnerTab) {
+                const tabTrigger = new bootstrap.Tab(beginnerTab);
+                tabTrigger.show();
+                updateProgress(5, progressBar, progressStatus);
+            }
         });
     }
     
@@ -560,14 +730,26 @@ function setupNavigationListeners(progressBar, progressStatus, progress) {
     // Listen for section navigation buttons that are created after initial load
     document.addEventListener('click', function(e) {
         if (e.target && e.target.id === 'toIntermediateBtn') {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#intermediateSection"]').click();
-            updateProgress(15, progressBar, progressStatus);
+            const intermediateTab = document.querySelector('#mainNav .nav-link[data-bs-target="#intermediateSection"]');
+            if (intermediateTab) {
+                const tabTrigger = new bootstrap.Tab(intermediateTab);
+                tabTrigger.show();
+                updateProgress(15, progressBar, progressStatus);
+            }
         } else if (e.target && e.target.id === 'toExpertBtn') {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#expertSection"]').click();
-            updateProgress(15, progressBar, progressStatus);
+            const expertTab = document.querySelector('#mainNav .nav-link[data-bs-target="#expertSection"]');
+            if (expertTab) {
+                const tabTrigger = new bootstrap.Tab(expertTab);
+                tabTrigger.show();
+                updateProgress(15, progressBar, progressStatus);
+            }
         } else if (e.target && e.target.id === 'toQuizBtn') {
-            document.querySelector('#mainNav .nav-link[data-bs-target="#quizSection"]').click();
-            updateProgress(15, progressBar, progressStatus);
+            const quizTab = document.querySelector('#mainNav .nav-link[data-bs-target="#quizSection"]');
+            if (quizTab) {
+                const tabTrigger = new bootstrap.Tab(quizTab);
+                tabTrigger.show();
+                updateProgress(15, progressBar, progressStatus);
+            }
         }
     });
 
@@ -579,8 +761,10 @@ function setupNavigationListeners(progressBar, progressStatus, progress) {
             const roadmapModal = document.getElementById('roadmapModal');
             if (roadmapModal) {
                 roadmapModal.addEventListener('shown.bs.modal', function() {
-                    mermaid.init(undefined, roadmapModal.querySelectorAll('.mermaid'));
-                });
+                    setTimeout(() => {
+                        initializeMermaidDiagrams();
+                    }, 100);
+                }, { once: true });
             }
         });
     }
@@ -902,17 +1086,45 @@ function updateProgress(increment, progressBar, progressStatus) {
         }
     }
 }
+
+// Global error handling
 window.addEventListener('error', function(e) {
-    console.error('Application error:', e.error);
+    console.error('💥 Application error:', e.error);
     showErrorMessage('Something went wrong. Please refresh the page.');
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('💥 Unhandled promise rejection:', e.reason);
+    showErrorMessage('An error occurred. Please try refreshing the page.');
+    e.preventDefault();
 });
 
 function showErrorMessage(message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x';
     errorDiv.style.zIndex = '9999';
-    errorDiv.textContent = message;
+    errorDiv.style.marginTop = '20px';
+    errorDiv.innerHTML = `
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        ${message}
+        <button type="button" class="btn-close ms-2" aria-label="Close" onclick="this.parentElement.remove()"></button>
+    `;
     document.body.appendChild(errorDiv);
     
-    setTimeout(() => errorDiv.remove(), 5000);
+    setTimeout(() => {
+        if (errorDiv.parentNode) {
+            errorDiv.remove();
+        }
+    }, 5000);
 }
+
+// Public API for external use
+window.adTechApp = {
+    initializeMermaidDiagrams,
+    loadContent,
+    updateProgress,
+    state: appState
+};
+
+console.log('📱 App.js fully loaded and ready');
