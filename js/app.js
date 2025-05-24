@@ -14,41 +14,81 @@ const appState = {
     initialized: false,
     currentTab: 'overview',
     contentLoaded: {},
-    mermaidInitialized: false
+    mermaidInitialized: false,
+    mermaidConfig: null
 };
 
 // Initialize Mermaid for flowcharts
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Mermaid with proper configuration
-    if (typeof mermaid !== 'undefined') {
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        const theme = isDarkMode ? 'dark' : 'default';
-        
-        mermaid.initialize({ 
-            startOnLoad: false, 
-            theme: theme,
-            securityLevel: 'loose',
-            darkMode: isDarkMode,
-            flowchart: {
-                htmlLabels: true,
-                curve: 'cardinal'
-            },
-            themeVariables: isDarkMode ? {
-                primaryColor: '#3498db',
-                primaryTextColor: '#f8f9fa',
-                primaryBorderColor: '#444',
-                lineColor: '#adb5bd',
-                secondaryColor: '#1e1e1e',
-                tertiaryColor: '#2d2d2d'
-            } : {}
-        });
-        appState.mermaidInitialized = true;
-        console.log('✅ Mermaid initialized with theme:', theme);
-    }
-
-    // Initialize the application
-    initApp();
+    // Wait for dark mode to initialize first
+    setTimeout(() => {
+        initializeMermaidSystem();
+        initApp();
+    }, 200);
 });
+
+/**
+ * Initialize Mermaid system properly
+ */
+function initializeMermaidSystem() {
+    if (typeof mermaid !== 'undefined' && !appState.mermaidInitialized) {
+        try {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const theme = isDarkMode ? 'dark' : 'default';
+            
+            appState.mermaidConfig = { 
+                startOnLoad: false, 
+                theme: theme,
+                securityLevel: 'loose',
+                flowchart: {
+                    htmlLabels: true,
+                    curve: 'linear',
+                    padding: 10
+                },
+                themeVariables: getMermaidThemeVariables(isDarkMode)
+            };
+            
+            mermaid.initialize(appState.mermaidConfig);
+            appState.mermaidInitialized = true;
+            console.log('✅ Mermaid system initialized with theme:', theme);
+        } catch (error) {
+            console.warn('⚠️ Could not initialize Mermaid system:', error);
+        }
+    }
+}
+
+/**
+ * Get Mermaid theme variables based on dark mode
+ */
+function getMermaidThemeVariables(isDarkMode) {
+    if (isDarkMode) {
+        return {
+            primaryColor: '#3498db',
+            primaryTextColor: '#f8f9fa',
+            primaryBorderColor: '#444',
+            lineColor: '#adb5bd',
+            secondaryColor: '#1e1e1e',
+            tertiaryColor: '#2d2d2d',
+            background: '#1e1e1e',
+            mainBkg: '#1e1e1e',
+            secondBkg: '#2d2d2d',
+            tertiaryBkg: '#444'
+        };
+    } else {
+        return {
+            primaryColor: '#3498db',
+            primaryTextColor: '#333',
+            primaryBorderColor: '#ddd',
+            lineColor: '#333',
+            secondaryColor: '#ffffff',
+            tertiaryColor: '#f9f9f9',
+            background: '#ffffff',
+            mainBkg: '#ffffff',
+            secondBkg: '#f9f9f9',
+            tertiaryBkg: '#e1f5fe'
+        };
+    }
+}
 
 /**
  * Initialize the main application
@@ -75,7 +115,7 @@ function initApp() {
         activateOverviewTab();
         // Initialize Mermaid diagrams after content is loaded
         initializeMermaidDiagrams();
-    }, 100);
+    }, 300);
 
     appState.initialized = true;
     console.log('✅ Application initialized successfully');
@@ -144,21 +184,134 @@ function initializeMermaidDiagrams() {
             if (mermaidElements.length > 0) {
                 console.log(`🎨 Initializing ${mermaidElements.length} Mermaid diagrams...`);
                 
-                // Reset processed attribute for re-rendering
-                mermaidElements.forEach(element => {
+                // Process each element
+                mermaidElements.forEach((element, index) => {
+                    // Store original content if not already stored
+                    if (!element.dataset.originalContent) {
+                        let originalContent = element.textContent.trim();
+                        
+                        // If content is corrupted, try to restore based on context
+                        if (!originalContent || originalContent.includes('flowchart TD A[') || originalContent.includes('style')) {
+                            originalContent = restoreMermaidContent(element);
+                        }
+                        
+                        element.dataset.originalContent = originalContent;
+                    }
+                    
+                    // Clear processed attribute
                     if (element.getAttribute('data-processed')) {
                         element.removeAttribute('data-processed');
                     }
+                    
+                    // Reset content
+                    element.innerHTML = element.dataset.originalContent;
+                    
+                    // Add unique ID if not present
+                    if (!element.id) {
+                        element.id = `mermaid-${index}`;
+                    }
                 });
                 
-                // Initialize diagrams
-                mermaid.init(undefined, mermaidElements);
+                // Initialize diagrams with delay
+                setTimeout(() => {
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
+                }, 100);
+                
                 console.log('✅ Mermaid diagrams initialized');
             }
         } catch (error) {
             console.warn('⚠️ Error initializing Mermaid diagrams:', error);
         }
     }
+}
+
+/**
+ * Restore Mermaid content based on context
+ */
+function restoreMermaidContent(element) {
+    const container = element.closest('.flowchart-container');
+    const card = element.closest('.card');
+    
+    // Check for specific headings to determine content
+    const headings = container ? 
+        container.querySelectorAll('h3, h5, h6') : 
+        card ? card.querySelectorAll('h3, h5, h6') : [];
+    
+    for (let heading of headings) {
+        const headingText = heading.textContent.toLowerCase();
+        
+        if (headingText.includes('header bidding')) {
+            return `flowchart TD
+                A[User Visits Page] --> B[Header Bidding Code Executes]
+                B --> C[Simultaneous Bid Requests]
+                C --> D[SSP/Exchange 1]
+                C --> E[SSP/Exchange 2]
+                C --> F[SSP/Exchange 3]
+                D --> G[Bids Collected]
+                E --> G
+                F --> G
+                G --> H[Highest Bid Selected]
+                H --> I[Passed to Ad Server]
+                I --> J{Compare with Direct Deals}
+                J --> K[Final Winner Determined]
+                K --> L[Ad Served to User]
+                
+                style A fill:#e1f5fe
+                style G fill:#fff3e0
+                style K fill:#c8e6c9
+                style L fill:#e8f5e8`;
+        }
+        
+        if (headingText.includes('data flow')) {
+            return `flowchart LR
+                A[User Data Collection] --> B[Data Management Platform]
+                B --> C[Audience Segmentation]
+                C --> D[DSP - Targeting]
+                B --> E[Publisher Insights]
+                E --> F[SSP - Inventory Valuation]
+                G[Campaign Performance] --> H[Optimization Algorithms]
+                H --> D
+                I[Identity Resolution] --> B
+                J[3rd Party Data Providers] --> B
+                K[1st Party Data] --> B
+                L[Ad Interactions] --> G
+                M[Conversions] --> G
+                
+                style B fill:#e3f2fd
+                style D fill:#f3e5f5
+                style F fill:#e8f5e8
+                style H fill:#fff3e0`;
+        }
+        
+        if (headingText.includes('rtb') || headingText.includes('real-time bidding')) {
+            return `flowchart TD
+                A[User Visits Website] --> B[Ad Request Generated]
+                B --> C[Publisher's Ad Server]
+                C --> D[Supply-Side Platform]
+                D --> E[Ad Exchange]
+                E --> F[DSPs Receive Bid Request]
+                F --> G[DSPs Evaluate User Data]
+                G --> H[DSPs Determine Bid Price]
+                H --> I[Bids Returned to Exchange]
+                I --> J[Auction Winner Determined]
+                J --> K[Winning Ad Served]
+                K --> L[Ad Displayed to User]
+                M[DMP - Data Management Platform] -.-> G
+                M -.-> H
+                N[Ad Verification] -.-> K
+                O[Attribution & Analytics] -.-> L
+                
+                style A fill:#e1f5fe
+                style L fill:#c8e6c9
+                style J fill:#fff3e0
+                style E fill:#f3e5f5`;
+        }
+    }
+    
+    // Default flowchart if none matched
+    return `graph TD
+        A[Start] --> B[Process]
+        B --> C[End]`;
 }
 
 /**
@@ -373,26 +526,32 @@ function loadQuizSection() {
             <p class="lead mb-5">Challenge yourself with these quizzes to reinforce your understanding of Ad Tech concepts.</p>
 
             <!-- Quiz Navigation -->
-            <ul class="nav nav-pills mb-4 justify-content-center" id="quizNav">
-                <li class="nav-item">
-                    <button class="nav-link active" id="beginner-quiz-tab" data-bs-toggle="pill" data-bs-target="#beginnerQuiz" type="button" role="tab" aria-controls="beginnerQuiz" aria-selected="true">Beginner</button>
+            <ul class="nav nav-pills mb-4 justify-content-center" id="quizNav" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="beginner-quiz-tab" data-quiz-target="beginnerQuiz" type="button" role="tab" aria-controls="beginnerQuiz" aria-selected="true">
+                        <i class="fas fa-seedling me-2"></i>Beginner
+                    </button>
                 </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="intermediate-quiz-tab" data-bs-toggle="pill" data-bs-target="#intermediateQuiz" type="button" role="tab" aria-controls="intermediateQuiz" aria-selected="false">Intermediate</button>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="intermediate-quiz-tab" data-quiz-target="intermediateQuiz" type="button" role="tab" aria-controls="intermediateQuiz" aria-selected="false">
+                        <i class="fas fa-cogs me-2"></i>Intermediate
+                    </button>
                 </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="expert-quiz-tab" data-bs-toggle="pill" data-bs-target="#expertQuiz" type="button" role="tab" aria-controls="expertQuiz" aria-selected="false">Expert</button>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="expert-quiz-tab" data-quiz-target="expertQuiz" type="button" role="tab" aria-controls="expertQuiz" aria-selected="false">
+                        <i class="fas fa-brain me-2"></i>Expert
+                    </button>
                 </li>
             </ul>
 
             <!-- Quiz Content -->
-            <div class="tab-content">
+            <div class="quiz-tab-content">
                 <!-- Beginner Quiz -->
-                <div class="tab-pane fade show active" id="beginnerQuiz" role="tabpanel" aria-labelledby="beginner-quiz-tab"></div>
+                <div class="quiz-pane show active" id="beginnerQuiz" role="tabpanel" aria-labelledby="beginner-quiz-tab"></div>
                 <!-- Intermediate Quiz -->
-                <div class="tab-pane fade" id="intermediateQuiz" role="tabpanel" aria-labelledby="intermediate-quiz-tab"></div>
+                <div class="quiz-pane" id="intermediateQuiz" role="tabpanel" aria-labelledby="intermediate-quiz-tab"></div>
                 <!-- Expert Quiz -->
-                <div class="tab-pane fade" id="expertQuiz" role="tabpanel" aria-labelledby="expert-quiz-tab"></div>
+                <div class="quiz-pane" id="expertQuiz" role="tabpanel" aria-labelledby="expert-quiz-tab"></div>
             </div>
         `;
 
@@ -421,10 +580,12 @@ function setupQuizTabNavigation() {
             e.preventDefault();
             
             // Get the target content ID
-            const targetId = this.getAttribute('data-bs-target');
+            const targetId = this.getAttribute('data-quiz-target');
+            
+            console.log('Quiz tab clicked:', targetId);
             
             // Hide all quiz panes
-            document.querySelectorAll('#quizSection .tab-pane').forEach(pane => {
+            document.querySelectorAll('.quiz-pane').forEach(pane => {
                 pane.classList.remove('show', 'active');
             });
             
@@ -439,9 +600,12 @@ function setupQuizTabNavigation() {
             this.setAttribute('aria-selected', 'true');
             
             // Show the target content
-            const targetPane = document.querySelector(targetId);
+            const targetPane = document.getElementById(targetId);
             if (targetPane) {
                 targetPane.classList.add('show', 'active');
+                console.log('✅ Quiz tab activated:', targetId);
+            } else {
+                console.error('❌ Quiz pane not found:', targetId);
             }
         });
     });
@@ -643,7 +807,7 @@ function setupEventListeners() {
         console.log('🌙 Dark mode changed, updating Mermaid diagrams...');
         setTimeout(() => {
             initializeMermaidDiagrams();
-        }, 100);
+        }, 200);
     });
     
     console.log('✅ Event listeners set up');
@@ -664,7 +828,7 @@ function setupTabNavigation() {
             // Re-initialize Mermaid diagrams in the new tab with delay
             setTimeout(() => {
                 initializeMermaidDiagrams();
-            }, 150);
+            }, 300);
         });
         
         // Also handle click events for proper tab switching
@@ -763,7 +927,7 @@ function setupNavigationListeners(progressBar, progressStatus, progress) {
                 roadmapModal.addEventListener('shown.bs.modal', function() {
                     setTimeout(() => {
                         initializeMermaidDiagrams();
-                    }, 100);
+                    }, 200);
                 }, { once: true });
             }
         });
