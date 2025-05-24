@@ -91,7 +91,6 @@ const intermediateContent = {
         {
             title: "Advanced Targeting Methods",
             content: `
-            <h3 class="mb-4">Advanced Targeting Methods</h3>
             <div class="row g-4 mb-5">
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100">
@@ -188,7 +187,6 @@ const intermediateContent = {
         {
             title: "Data Flow in Ad Tech",
             content: `
-            <h3 class="mb-4">Data Flow in Ad Tech</h3>
             <div class="flowchart-container mb-5">
                 <div class="mermaid">
                     flowchart LR
