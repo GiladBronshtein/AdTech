@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h4 class="alert-heading mb-1">Loading Error</h4>
                     <p class="mb-2">${message}</p>
                     <button class="btn btn-outline-danger" onclick="location.reload()">
-                        <i class="fas fa-refresh me-2"></i>Reload Page
+                        <i class="fas fa-arrows-rotate me-2"></i>Reload Page
                     </button>
                 </div>
             </div>
@@ -434,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div>
                                 <strong>Partial Load Warning:</strong> Some features may not work properly. 
                                 <button class="btn btn-sm btn-warning ms-2" onclick="location.reload()">
-                                    <i class="fas fa-refresh me-1"></i>Reload
+                                    <i class="fas fa-arrows-rotate me-1"></i>Reload
                                 </button>
                             </div>
                         </div>

@@ -803,7 +803,7 @@ function showFallbackContent() {
                 <h4><i class="fas fa-exclamation-triangle me-2"></i>Loading Issue</h4>
                 <p>Some features may not work properly. Please refresh the page to try again.</p>
                 <button class="btn btn-primary" onclick="location.reload()">
-                    <i class="fas fa-refresh me-2"></i>Refresh Page
+                    <i class="fas fa-arrows-rotate me-2"></i>Refresh Page
                 </button>
             </div>
         `;
