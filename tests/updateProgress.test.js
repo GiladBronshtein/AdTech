@@ -20,7 +20,7 @@ describe('updateProgress', () => {
     progressBar.textContent = '0%';
 
     progressStatus = document.createElement('div');
-    progressStatus.id = 'progressStatus';
+    progressStatus.id = 'progress-status';
     progressStatus.textContent = 'Just started';
 
     document.body.appendChild(progressBar);
