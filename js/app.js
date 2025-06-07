@@ -417,7 +417,7 @@ function loadQuizSection() {
         <h2 class="section-title">Test Your Ad Tech Knowledge</h2>
         <p class="lead mb-5">Challenge yourself with these quizzes to reinforce your understanding of Ad Tech concepts.</p>
 
-        <ul class="nav nav-pills mb-4 justify-content-center" id="quizNav" role="tablist">
+        <ul class="nav nav-pills mb-4 justify-content-center" id="quiz-nav" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="beginner-quiz-tab" data-quiz-target="beginnerQuiz" type="button" role="tab">
                     <i class="fas fa-seedling me-2"></i>Beginner
@@ -639,8 +639,8 @@ function setupEventListeners() {
  * Set up navigation event listeners
  */
 function setupNavigationListeners() {
-    const progressBar = document.querySelector('#progressTracker .progress-bar');
-    const progressStatus = document.getElementById('progressStatus');
+    const progressBar = document.querySelector('#progress-tracker .progress-bar');
+    const progressStatus = document.getElementById('progress-status');
     
     // Start learning buttons
     ['startLearningBtn', 'startLearningModalBtn', 'beginnerBtn'].forEach(btnId => {
@@ -859,7 +859,7 @@ function loadQuizContent(quizId, quizData) {
 }
 
 function setupQuizTabNavigation() {
-    const quizNavTabs = document.querySelectorAll('#quizNav .nav-link');
+    const quizNavTabs = document.querySelectorAll('#quiz-nav .nav-link');
     
     quizNavTabs.forEach(tab => {
         tab.addEventListener('click', function(e) {
@@ -971,11 +971,11 @@ function handleQuizSubmission(section) {
     } else if (correctCount === questions.length) {
         resultDiv.className += ' alert-success';
         resultDiv.innerHTML = `<i class="fas fa-trophy me-2"></i> Perfect! You got all ${questions.length} questions correct!`;
-        updateProgress(10, document.querySelector('#progressTracker .progress-bar'), document.getElementById('progressStatus'));
+        updateProgress(10, document.querySelector('#progress-tracker .progress-bar'), document.getElementById('progress-status'));
     } else {
         resultDiv.className += ' alert-info';
         resultDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i> You got ${correctCount} out of ${questions.length} questions correct.`;
-        updateProgress(5, document.querySelector('#progressTracker .progress-bar'), document.getElementById('progressStatus'));
+        updateProgress(5, document.querySelector('#progress-tracker .progress-bar'), document.getElementById('progress-status'));
     }
     
     quizContainer.appendChild(resultDiv);
