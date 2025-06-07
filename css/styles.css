@@ -72,6 +72,9 @@ body {
     box-shadow: var(--hover-shadow);
     border-color: var(--primary-color);
     transform: translateY(-2px);
+    background: var(--card-background);
+    color: var(--text-color);
+    opacity: 1;
 }
 
 .dark-mode-toggle:focus {
@@ -181,7 +184,7 @@ body {
 /* Cards */
 .card {
     border-radius: var(--border-radius);
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--box-shadow);
     transition: var(--transition);
     height: 100%;
@@ -333,7 +336,7 @@ body {
 }
 
 #progress-status {
-    color: var(--text-light);
+    color: var(--text-light) !important;
     font-size: 0.9em;
 }
 
@@ -344,7 +347,8 @@ body {
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     margin-bottom: 60px;
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: auto;
     border: 1px solid var(--border-color);
 }
 
@@ -362,7 +366,8 @@ body {
 
 /* Ensure Mermaid text is visible */
 .mermaid svg {
-    max-width: 100%;
+    width: max-content;
+    max-width: none;
     height: auto;
 }
 
