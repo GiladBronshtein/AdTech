@@ -249,11 +249,11 @@ function checkDependencies() {
 function initializeMermaidSystem() {
     // Function to check Mermaid availability
     const checkMermaid = () => {
-        return typeof mermaid !== 'undefined' || window.mermaid;
+        return window.mermaidLoaded && (typeof mermaid !== 'undefined' || window.mermaid);
     };
 
     // Function to initialize with retry mechanism
-    const tryInitialize = (retryCount = 0, maxRetries = 5) => {
+    const tryInitialize = (retryCount = 0, maxRetries = 10) => {
         if (checkMermaid()) {
             console.log('✅ Mermaid is available, proceeding with initialization');
             proceedWithInitialization();
@@ -275,7 +275,7 @@ function initializeMermaidSystem() {
         console.log(`📝 Waiting for Mermaid to load (attempt ${retryCount + 1}/${maxRetries})...`);
         setTimeout(() => {
             tryInitialize(retryCount + 1, maxRetries);
-        }, 1000);
+        }, 500); // Reduced timeout to 500ms but increased max retries
     };
 
     // Start the initialization process
@@ -287,12 +287,22 @@ function initializeMermaidSystem() {
             return;
         }
 
+        if (!window.mermaidLoaded || typeof mermaid === 'undefined') {
+            console.warn('Mermaid not fully loaded yet, waiting...');
+            setTimeout(proceedWithInitialization, 100);
+            return;
+        }
+
         try {
             const isDarkMode = document.body.classList.contains('dark-mode');
             const theme = isDarkMode ? 'dark' : 'default';
             
+            // Initialize with default config first
+            mermaid.initialize({ startOnLoad: false });
+            
+            // Then apply our custom config
             appState.mermaidConfig = { 
-                startOnLoad: true,  // Changed to true for automatic initialization
+                startOnLoad: true,
                 theme: theme,
                 securityLevel: 'loose',
                 flowchart: {
@@ -326,6 +336,8 @@ function initializeMermaidSystem() {
         } catch (error) {
             console.error('❌ Error in Mermaid initialization:', error);
             appState.mermaidInitialized = false;
+            // Retry initialization after a short delay
+            setTimeout(proceedWithInitialization, 500);
         }
     }
 
