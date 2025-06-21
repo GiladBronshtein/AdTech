@@ -200,16 +200,29 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('🚀 All modules loaded successfully, initializing app...');
         
         try {
-            // Validate required components
-            const requiredComponents = [
-                { name: 'contentData', obj: window.contentData || (typeof contentData !== 'undefined' ? contentData : null) },
-                { name: 'mermaid', obj: window.mermaid },
-                { name: 'bootstrap', obj: window.bootstrap }
-            ];
+            // Check for required components with better detection
+            const requiredComponents = [];
             
-            const missingComponents = requiredComponents.filter(comp => !comp.obj);
-            if (missingComponents.length > 0) {
-                console.warn('⚠️ Missing components:', missingComponents.map(c => c.name));
+            // Check for contentData
+            const contentDataExists = window.contentData || (typeof contentData !== 'undefined' ? contentData : null);
+            if (!contentDataExists) {
+                requiredComponents.push('contentData');
+            }
+            
+            // Check for Mermaid (it loads asynchronously)
+            const mermaidExists = window.mermaid || (typeof mermaid !== 'undefined');
+            if (!mermaidExists) {
+                requiredComponents.push('mermaid');
+            }
+            
+            // Check for Bootstrap (it's loaded via CDN)
+            const bootstrapExists = window.bootstrap || (typeof bootstrap !== 'undefined') || document.querySelector('script[src*="bootstrap"]');
+            if (!bootstrapExists) {
+                requiredComponents.push('bootstrap');
+            }
+            
+            if (requiredComponents.length > 0) {
+                console.warn('⚠️ Missing components:', requiredComponents);
             }
             
             // Hide loading indicator with smooth transition

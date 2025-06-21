@@ -106,14 +106,46 @@ const mermaidTemplates = {
         Publisher->>User: Show ad to user`
 };
 
+// Wait for external CDN scripts to load
+function waitForExternalScripts(callback, timeout = 10000) {
+    const startTime = Date.now();
+    
+    function checkScripts() {
+        const mermaidScript = document.querySelector('script[src*="mermaid"]');
+        const bootstrapScript = document.querySelector('script[src*="bootstrap"]');
+        
+        // Check if scripts are loaded and ready
+        const mermaidReady = (mermaidScript && (typeof mermaid !== 'undefined' || window.mermaid)) || 
+                           !mermaidScript; // If no script tag, consider ready
+        const bootstrapReady = (bootstrapScript && (typeof bootstrap !== 'undefined' || window.bootstrap)) || 
+                             !bootstrapScript; // If no script tag, consider ready
+        
+        if (mermaidReady && bootstrapReady) {
+            console.log('✅ External scripts loaded successfully');
+            callback();
+        } else if (Date.now() - startTime > timeout) {
+            console.warn('⚠️ Timeout waiting for external scripts, proceeding anyway');
+            callback();
+        } else {
+            // Wait a bit more
+            setTimeout(checkScripts, 200);
+        }
+    }
+    
+    checkScripts();
+}
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 DOM loaded, starting app initialization...');
+    console.log('🚀 DOM loaded, waiting for external scripts...');
     
-    // Wait for other modules to be loaded
-    setTimeout(() => {
-        safeInitApp();
-    }, 500);
+    // Wait for external scripts first, then start app initialization
+    waitForExternalScripts(() => {
+        console.log('🚀 Starting app initialization...');
+        setTimeout(() => {
+            safeInitApp();
+        }, 300);
+    });
 });
 
 /**
@@ -177,9 +209,28 @@ function safeInitApp() {
  */
 function checkDependencies() {
     const required = [
-        { name: 'Bootstrap', check: () => typeof bootstrap !== 'undefined' },
-        { name: 'Mermaid', check: () => typeof mermaid !== 'undefined' },
-        { name: 'Content Data', check: () => typeof contentData !== 'undefined' }
+        { 
+            name: 'Bootstrap', 
+            check: () => {
+                // Check for Bootstrap in multiple ways
+                return typeof bootstrap !== 'undefined' || 
+                       window.bootstrap || 
+                       document.querySelector('script[src*="bootstrap"]') !== null;
+            }
+        },
+        { 
+            name: 'Mermaid', 
+            check: () => {
+                // Check for Mermaid in multiple ways
+                return typeof mermaid !== 'undefined' || 
+                       window.mermaid || 
+                       document.querySelector('script[src*="mermaid"]') !== null;
+            }
+        },
+        { 
+            name: 'Content Data', 
+            check: () => typeof contentData !== 'undefined' || window.contentData
+        }
     ];
     
     const missing = required.filter(dep => !dep.check());
@@ -196,8 +247,26 @@ function checkDependencies() {
  * Initialize Mermaid system with proper error handling
  */
 function initializeMermaidSystem() {
-    if (typeof mermaid === 'undefined') {
-        console.warn('⚠️ Mermaid not available');
+    // Check if Mermaid is available in multiple ways
+    const mermaidAvailable = typeof mermaid !== 'undefined' || window.mermaid;
+    
+    if (!mermaidAvailable) {
+        console.warn('⚠️ Mermaid not available, checking if script is loaded...');
+        
+        // Check if script is loaded but not yet ready
+        const mermaidScript = document.querySelector('script[src*="mermaid"]');
+        if (mermaidScript) {
+            console.log('📝 Mermaid script found, waiting for it to load...');
+            // Wait a bit more for Mermaid to load
+            setTimeout(() => {
+                if (typeof mermaid !== 'undefined' || window.mermaid) {
+                    console.log('✅ Mermaid loaded after waiting');
+                    initializeMermaidSystem(); // Retry
+                } else {
+                    console.warn('⚠️ Mermaid still not available after waiting');
+                }
+            }, 1000);
+        }
         return;
     }
 
