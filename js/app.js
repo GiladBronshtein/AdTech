@@ -249,7 +249,7 @@ function checkDependencies() {
 function initializeMermaidSystem() {
     // Function to check Mermaid availability
     const checkMermaid = () => {
-        return window.mermaidLoaded && (typeof mermaid !== 'undefined' || window.mermaid);
+        return typeof window.mermaid !== 'undefined';
     };
 
     // Function to initialize with retry mechanism
@@ -275,11 +275,8 @@ function initializeMermaidSystem() {
         console.log(`📝 Waiting for Mermaid to load (attempt ${retryCount + 1}/${maxRetries})...`);
         setTimeout(() => {
             tryInitialize(retryCount + 1, maxRetries);
-        }, 500); // Reduced timeout to 500ms but increased max retries
+        }, 500);
     };
-
-    // Start the initialization process
-    tryInitialize();
 
     function proceedWithInitialization() {
         if (appState.mermaidInitialized) {
@@ -287,24 +284,19 @@ function initializeMermaidSystem() {
             return;
         }
 
-        if (!window.mermaidLoaded || typeof mermaid === 'undefined') {
-            console.warn('Mermaid not fully loaded yet, waiting...');
-            setTimeout(proceedWithInitialization, 100);
-            return;
-        }
-
         try {
             const isDarkMode = document.body.classList.contains('dark-mode');
-            const theme = isDarkMode ? 'dark' : 'default';
             
-            // Initialize with default config first
-            mermaid.initialize({ startOnLoad: false });
-            
-            // Then apply our custom config
-            appState.mermaidConfig = { 
+            // Get the base configuration
+            const baseConfig = window.mermaidConfig || {
                 startOnLoad: true,
-                theme: theme,
                 securityLevel: 'loose',
+                theme: isDarkMode ? 'dark' : 'default'
+            };
+            
+            // Extend with additional settings
+            const fullConfig = {
+                ...baseConfig,
                 flowchart: {
                     htmlLabels: true,
                     curve: 'linear',
@@ -324,9 +316,14 @@ function initializeMermaidSystem() {
                 themeVariables: getMermaidThemeVariables(isDarkMode)
             };
             
-            mermaid.initialize(appState.mermaidConfig);
+            // Initialize Mermaid with the full configuration
+            window.mermaid.initialize(fullConfig);
+            
+            // Store the configuration for future reference
+            appState.mermaidConfig = fullConfig;
             appState.mermaidInitialized = true;
-            console.log('✅ Mermaid system initialized with theme:', theme);
+            
+            console.log('✅ Mermaid system initialized with theme:', fullConfig.theme);
             
             // Force re-render all diagrams
             setTimeout(() => {
@@ -341,46 +338,8 @@ function initializeMermaidSystem() {
         }
     }
 
-    if (appState.mermaidInitialized) {
-        console.log('Mermaid already initialized');
-        return;
-    }
-
-    try {
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        const theme = isDarkMode ? 'dark' : 'default';
-        
-        appState.mermaidConfig = { 
-            startOnLoad: false, 
-            theme: theme,
-            securityLevel: 'loose',
-            flowchart: {
-                htmlLabels: true,
-                curve: 'linear',
-                padding: 15,
-                nodeSpacing: 50,
-                rankSpacing: 50
-            },
-            sequence: {
-                actorMargin: 50,
-                width: 150,
-                height: 65,
-                boxMargin: 10,
-                boxTextMargin: 5,
-                noteMargin: 10,
-                messageMargin: 35
-            },
-            themeVariables: getMermaidThemeVariables(isDarkMode)
-        };
-        
-        mermaid.initialize(appState.mermaidConfig);
-        appState.mermaidInitialized = true;
-        console.log('✅ Mermaid system initialized with theme:', theme);
-        
-    } catch (error) {
-        console.error('❌ Mermaid initialization failed:', error);
-        appState.mermaidInitialized = false;
-    }
+    // Start the initialization process
+    tryInitialize();
 }
 
 /**
@@ -643,12 +602,13 @@ function loadGlossarySection() {
  */
 function initializeMermaidDiagrams() {
     const initializeWithRetry = (retryCount = 0, maxRetries = 3) => {
-        if (!appState.mermaidInitialized) {
+        // Check if Mermaid is available and initialized
+        if (!window.mermaid || !appState.mermaidInitialized) {
             if (retryCount >= maxRetries) {
-                console.error('❌ Failed to initialize Mermaid after maximum retries');
+                console.error('❌ Failed to initialize Mermaid diagrams after maximum retries');
                 return;
             }
-            console.warn(`⚠️ Mermaid not initialized, retrying... (${retryCount + 1}/${maxRetries})`);
+            console.warn(`⚠️ Mermaid not ready, retrying... (${retryCount + 1}/${maxRetries})`);
             setTimeout(() => initializeWithRetry(retryCount + 1, maxRetries), 1000);
             return;
         }
@@ -702,20 +662,44 @@ function initializeMermaidDiagrams() {
             });
             
             // Initialize diagrams with retry mechanism
-            const initDiagrams = (attempt = 0, maxAttempts = 3) => {
+            const renderDiagrams = async (attempt = 0, maxAttempts = 3) => {
                 try {
-                    mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
-                    console.log('✅ Mermaid diagrams initialized successfully');
+                    // Wrap the initialization in a promise to handle async errors
+                    await new Promise((resolve, reject) => {
+                        try {
+                            window.mermaid.init(undefined, '.mermaid:not([data-processed])');
+                            // Add a small delay before resolving to catch post-render errors
+                            setTimeout(resolve, 100);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    });
+                    
+                    console.log('✅ Mermaid diagrams rendered successfully');
+                    
+                    // Add error handlers to SVG elements to prevent uncaught errors
+                    document.querySelectorAll('.mermaid svg').forEach(svg => {
+                        svg.addEventListener('error', (e) => {
+                            console.warn('SVG error handled:', e);
+                            e.preventDefault();
+                            e.stopPropagation();
+                        });
+                    });
+                    
                 } catch (initError) {
-                    console.error(`❌ Error initializing Mermaid diagrams (attempt ${attempt + 1}/${maxAttempts}):`, initError);
+                    console.error(`❌ Error rendering Mermaid diagrams (attempt ${attempt + 1}/${maxAttempts}):`, initError);
                     if (attempt < maxAttempts - 1) {
-                        setTimeout(() => initDiagrams(attempt + 1, maxAttempts), 500);
+                        setTimeout(() => renderDiagrams(attempt + 1, maxAttempts), 500);
                     }
                 }
             };
             
-            // Start initialization with a small delay
-            setTimeout(() => initDiagrams(), 200);
+            // Start rendering with a small delay and catch any uncaught errors
+            setTimeout(() => {
+                renderDiagrams().catch(error => {
+                    console.warn('Handled post-render error:', error);
+                });
+            }, 200);
             
         } catch (error) {
             console.error('❌ Error in initializeMermaidDiagrams:', error);

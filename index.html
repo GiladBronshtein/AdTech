@@ -19,11 +19,19 @@
     <link href="css/styles.css" rel="stylesheet">
     <link href="css/loader-styles.css" rel="stylesheet">
     
+    <!-- Mermaid for diagrams -->
+    <script>
+        // Initialize mermaid configuration before loading the script
+        window.mermaidConfig = {
+            startOnLoad: true,
+            securityLevel: 'loose',
+            theme: document.body.classList.contains('dark-mode') ? 'dark' : 'default'
+        };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.3.1/mermaid.min.js"></script>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" crossorigin="anonymous" integrity="sha512-VK2zcvntEufaimc+efOYi622VN5ZacdnufnmX7zIhCPmjhKnOi9ZDMtg1/ug5l183f19gG1/cBstPO4D8N/Img==" defer></script>
-    
-    <!-- Mermaid for diagrams -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.3.1/mermaid.min.js" crossorigin="anonymous" integrity="sha512-/AtrLNHEYoDQWnKJku/1ONthAOJ5ZWoJIf0ePKLABwEYl2nUeaLEeGmJW4q2mTUlqRcUWZGW8peqJ4pTNGz3Ww==" onload="window.mermaidLoaded = true;"></script>
     
     <!-- Favicon -->
     <link rel="icon" href="images/favicon.ico" type="image/x-icon">
