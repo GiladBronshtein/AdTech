@@ -244,30 +244,89 @@ function checkDependencies() {
 }
 
 /**
- * Initialize Mermaid system with proper error handling
+ * Initialize Mermaid system with proper error handling and retries
  */
 function initializeMermaidSystem() {
-    // Check if Mermaid is available in multiple ways
-    const mermaidAvailable = typeof mermaid !== 'undefined' || window.mermaid;
-    
-    if (!mermaidAvailable) {
-        console.warn('⚠️ Mermaid not available, checking if script is loaded...');
-        
-        // Check if script is loaded but not yet ready
-        const mermaidScript = document.querySelector('script[src*="mermaid"]');
-        if (mermaidScript) {
-            console.log('📝 Mermaid script found, waiting for it to load...');
-            // Wait a bit more for Mermaid to load
-            setTimeout(() => {
-                if (typeof mermaid !== 'undefined' || window.mermaid) {
-                    console.log('✅ Mermaid loaded after waiting');
-                    initializeMermaidSystem(); // Retry
-                } else {
-                    console.warn('⚠️ Mermaid still not available after waiting');
-                }
-            }, 1000);
+    // Function to check Mermaid availability
+    const checkMermaid = () => {
+        return typeof mermaid !== 'undefined' || window.mermaid;
+    };
+
+    // Function to initialize with retry mechanism
+    const tryInitialize = (retryCount = 0, maxRetries = 5) => {
+        if (checkMermaid()) {
+            console.log('✅ Mermaid is available, proceeding with initialization');
+            proceedWithInitialization();
+            return;
         }
-        return;
+
+        if (retryCount >= maxRetries) {
+            console.error('❌ Failed to initialize Mermaid after maximum retries');
+            // Add fallback visualization or error message
+            document.querySelectorAll('.mermaid').forEach(el => {
+                el.innerHTML = `<div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    Diagram loading failed. Please refresh the page.
+                </div>`;
+            });
+            return;
+        }
+
+        console.log(`📝 Waiting for Mermaid to load (attempt ${retryCount + 1}/${maxRetries})...`);
+        setTimeout(() => {
+            tryInitialize(retryCount + 1, maxRetries);
+        }, 1000);
+    };
+
+    // Start the initialization process
+    tryInitialize();
+
+    function proceedWithInitialization() {
+        if (appState.mermaidInitialized) {
+            console.log('Mermaid already initialized');
+            return;
+        }
+
+        try {
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const theme = isDarkMode ? 'dark' : 'default';
+            
+            appState.mermaidConfig = { 
+                startOnLoad: true,  // Changed to true for automatic initialization
+                theme: theme,
+                securityLevel: 'loose',
+                flowchart: {
+                    htmlLabels: true,
+                    curve: 'linear',
+                    padding: 15,
+                    nodeSpacing: 50,
+                    rankSpacing: 50
+                },
+                sequence: {
+                    actorMargin: 50,
+                    width: 150,
+                    height: 65,
+                    boxMargin: 10,
+                    boxTextMargin: 5,
+                    noteMargin: 10,
+                    messageMargin: 35
+                },
+                themeVariables: getMermaidThemeVariables(isDarkMode)
+            };
+            
+            mermaid.initialize(appState.mermaidConfig);
+            appState.mermaidInitialized = true;
+            console.log('✅ Mermaid system initialized with theme:', theme);
+            
+            // Force re-render all diagrams
+            setTimeout(() => {
+                initializeMermaidDiagrams();
+            }, 100);
+            
+        } catch (error) {
+            console.error('❌ Error in Mermaid initialization:', error);
+            appState.mermaidInitialized = false;
+        }
     }
 
     if (appState.mermaidInitialized) {
@@ -568,67 +627,91 @@ function loadGlossarySection() {
 }
 
 /**
- * Initialize or re-initialize Mermaid diagrams with improved content restoration
+ * Initialize or re-initialize Mermaid diagrams with improved content restoration and error handling
  */
 function initializeMermaidDiagrams() {
-    if (!appState.mermaidInitialized) {
-        console.warn('⚠️ Mermaid not initialized, skipping diagram rendering');
-        return;
-    }
-
-    try {
-        const mermaidElements = document.querySelectorAll('.mermaid');
-        
-        if (mermaidElements.length === 0) {
-            console.log('No Mermaid elements found');
+    const initializeWithRetry = (retryCount = 0, maxRetries = 3) => {
+        if (!appState.mermaidInitialized) {
+            if (retryCount >= maxRetries) {
+                console.error('❌ Failed to initialize Mermaid after maximum retries');
+                return;
+            }
+            console.warn(`⚠️ Mermaid not initialized, retrying... (${retryCount + 1}/${maxRetries})`);
+            setTimeout(() => initializeWithRetry(retryCount + 1, maxRetries), 1000);
             return;
         }
 
-        console.log(`🎨 Processing ${mermaidElements.length} Mermaid diagrams...`);
-        
-        mermaidElements.forEach((element, index) => {
-            try {
-                // Store or restore original content
-                if (!element.dataset.originalContent) {
-                    let originalContent = element.textContent.trim();
-                    
-                    // If content is corrupted or empty, try to restore
-                    if (!originalContent || originalContent.length < 10 || originalContent.includes('undefined')) {
-                        originalContent = restoreMermaidContent(element);
+        try {
+            const mermaidElements = document.querySelectorAll('.mermaid');
+            
+            if (mermaidElements.length === 0) {
+                console.log('No Mermaid elements found');
+                return;
+            }
+
+            console.log(`🎨 Processing ${mermaidElements.length} Mermaid diagrams...`);
+            
+            // Process each diagram
+            mermaidElements.forEach((element, index) => {
+                try {
+                    // Ensure element has an ID
+                    if (!element.id) {
+                        element.id = `mermaid-diagram-${index}-${Date.now()}`;
+                    }
+
+                    // Store or restore original content
+                    if (!element.dataset.originalContent) {
+                        let originalContent = element.textContent.trim();
+                        
+                        // If content is corrupted or empty, try to restore
+                        if (!originalContent || originalContent.length < 10 || originalContent.includes('undefined')) {
+                            originalContent = restoreMermaidContent(element);
+                        }
+                        
+                        // Validate content before storing
+                        if (originalContent && originalContent.length >= 10) {
+                            element.dataset.originalContent = originalContent;
+                        } else {
+                            throw new Error('Invalid diagram content');
+                        }
                     }
                     
-                    element.dataset.originalContent = originalContent;
+                    // Clear any processing flags and reset content
+                    element.removeAttribute('data-processed');
+                    element.innerHTML = element.dataset.originalContent;
+                    
+                } catch (elementError) {
+                    console.warn(`⚠️ Error processing Mermaid element ${element.id}:`, elementError);
+                    element.innerHTML = `<div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Failed to load diagram. Please refresh the page.
+                    </div>`;
                 }
-                
-                // Clear any processing flags
-                element.removeAttribute('data-processed');
-                
-                // Reset content
-                element.innerHTML = element.dataset.originalContent;
-                
-                // Add unique ID
-                if (!element.id) {
-                    element.id = `mermaid-diagram-${index}-${Date.now()}`;
+            });
+            
+            // Initialize diagrams with retry mechanism
+            const initDiagrams = (attempt = 0, maxAttempts = 3) => {
+                try {
+                    mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
+                    console.log('✅ Mermaid diagrams initialized successfully');
+                } catch (initError) {
+                    console.error(`❌ Error initializing Mermaid diagrams (attempt ${attempt + 1}/${maxAttempts}):`, initError);
+                    if (attempt < maxAttempts - 1) {
+                        setTimeout(() => initDiagrams(attempt + 1, maxAttempts), 500);
+                    }
                 }
-                
-            } catch (elementError) {
-                console.warn(`⚠️ Error processing Mermaid element ${index}:`, elementError);
-            }
-        });
-        
-        // Initialize diagrams with delay
-        setTimeout(() => {
-            try {
-                mermaid.init(undefined, document.querySelectorAll('.mermaid:not([data-processed])'));
-                console.log('✅ Mermaid diagrams initialized');
-            } catch (initError) {
-                console.error('❌ Error initializing Mermaid diagrams:', initError);
-            }
-        }, 200);
-        
-    } catch (error) {
-        console.error('❌ Error in initializeMermaidDiagrams:', error);
-    }
+            };
+            
+            // Start initialization with a small delay
+            setTimeout(() => initDiagrams(), 200);
+            
+        } catch (error) {
+            console.error('❌ Error in initializeMermaidDiagrams:', error);
+        }
+    };
+
+    // Start the initialization process
+    initializeWithRetry();
 }
 
 /**
